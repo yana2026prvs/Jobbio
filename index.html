@@ -1,3 +1,6 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>План виходу на ринок праці</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
@@ -15,6 +18,8 @@
     --border: rgba(255,255,255,.09);
     --lime: #D6F24B;
     --lime-ink: #14150B;
+    --urgent: #FF6F5B;
+    --urgent-bg: rgba(255,111,91,.16);
     --grad-1a: #C9E0A0; --grad-1b: #7E9B4E;
     --grad-2a: #E8C3AE; --grad-2b: #C98A6E;
     --grad-3a: #C8D8EE; --grad-3b: #7E93B8;
@@ -150,6 +155,27 @@
   .app-page .task-result { font-size: 11.5px; color: var(--muted); margin-top: 8px; }
   .app-page .task-result b { color: var(--ink); font-weight: 700; }
 
+  .app-page .task-deadline {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600;
+    color: var(--muted); background: var(--tile); border-radius: 999px; padding: 4px 10px; align-self: flex-start;
+  }
+  .app-page .task-deadline.is-urgent { color: var(--urgent); background: var(--urgent-bg); }
+  .app-page .task-deadline[hidden] { display: none; }
+
+  .app-page .task-deadline-edit { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+  .app-page .task-deadline-edit[hidden] { display: none; }
+  .app-page .task-deadline-edit label {
+    font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; flex: 1;
+  }
+  .app-page .task-deadline-edit input[type="date"] {
+    font-family: inherit; font-size: 12px; color: var(--ink); background: var(--tile);
+    border: 1px solid var(--border); border-radius: 10px; padding: 6px 8px; color-scheme: dark;
+  }
+  .app-page .task-deadline-edit .tde-clear {
+    font-family: inherit; font-size: 11px; font-weight: 600; color: var(--muted);
+    background: none; border: none; cursor: pointer; padding: 4px 2px; flex: 0 0 auto;
+  }
+
   .app-page .seg { display: flex; gap: 4px; background: var(--tile); border-radius: 999px; padding: 4px; }
   .app-page .seg button {
     flex: 1; font-family: inherit; font-size: 12.5px; font-weight: 600;
@@ -195,14 +221,19 @@
   .bottom-nav button[aria-current="true"] { background: var(--ink); color: var(--bg); }
   .bottom-nav button .bn-ic { font-size: 14px; line-height: 1; }
 
-  /* ---------- applications stats ---------- */
-  .apps-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
-  .stat-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-    padding: 14px 10px; display: flex; flex-direction: column; gap: 4px; align-items: flex-start;
+  /* ---------- applications funnel ---------- */
+  .funnel {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 22px;
+    padding: 6px 16px; margin-bottom: 18px;
   }
-  .stat-num { font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
-  .stat-label { font-size: 10.5px; color: var(--muted); font-weight: 500; line-height: 1.25; }
+  .funnel-row { display: flex; flex-direction: column; padding: 12px 0; }
+  .funnel-row + .funnel-row { border-top: 1px dashed var(--border); }
+  .funnel-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .funnel-name { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+  .funnel-count { font-size: 19px; font-weight: 800; letter-spacing: -.01em; }
+  .funnel-bar-track { height: 6px; border-radius: 999px; background: var(--tile); margin-top: 8px; overflow: hidden; }
+  .funnel-bar-fill { height: 100%; border-radius: 999px; background: var(--lime); }
+  .funnel-conv { font-size: 10.5px; color: var(--muted); margin-top: 6px; }
 
   /* ---------- application cards ---------- */
   .apps-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
@@ -222,16 +253,30 @@
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .app-card .app-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
-  .app-card .app-seg { display: flex; gap: 4px; background: var(--tile); border-radius: 999px; padding: 4px; }
-  .app-card .app-seg button {
-    flex: 1; font-family: inherit; font-size: 12.5px; font-weight: 600;
-    padding: 8px 6px; border: none; background: var(--seg-idle); color: var(--muted-soft);
-    cursor: pointer; border-radius: 999px; white-space: nowrap; transition: background .12s, color .12s;
+  .app-card .app-seg {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px;
+    background: var(--tile); border-radius: 16px; padding: 4px;
   }
-  .app-card .app-seg button[data-key="waiting"][aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-  .app-card .app-seg button[data-key="replied"][aria-pressed="true"] { background: var(--lime); color: var(--lime-ink); }
+  .app-card .app-seg button {
+    font-family: inherit; font-size: 11.5px; font-weight: 600;
+    padding: 8px 4px; border: none; background: var(--seg-idle); color: var(--muted-soft);
+    cursor: pointer; border-radius: 12px; white-space: nowrap; transition: background .12s, color .12s;
+  }
+  .app-card .app-seg button[data-key="sent"][aria-pressed="true"],
+  .app-card .app-seg button[data-key="replied"][aria-pressed="true"],
+  .app-card .app-seg button[data-key="interview"][aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .app-card .app-seg button[data-key="offer"][aria-pressed="true"] { background: var(--lime); color: var(--lime-ink); }
   .apps-empty { font-size: 12.5px; color: var(--muted); padding: 10px 2px 20px; }
   .apps-empty[hidden] { display: none; }
+
+  /* ---------- app deadline ---------- */
+  .app-card .app-deadline { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .app-card .app-deadline-label { font-size: 11px; font-weight: 600; color: var(--muted); }
+  .app-card .app-deadline-label.is-urgent { color: var(--urgent); }
+  .app-card .app-deadline input[type="date"] {
+    font-family: inherit; font-size: 12px; color: var(--ink); background: var(--tile);
+    border: 1px solid var(--border); border-radius: 10px; padding: 6px 8px; color-scheme: dark;
+  }
 
   /* ---------- add application form ---------- */
   .add-btn {
@@ -249,6 +294,9 @@
     border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; width: 100%; resize: vertical;
   }
   .add-form textarea { min-height: 56px; }
+  .add-form .add-field { display: flex; flex-direction: column; gap: 4px; }
+  .add-form .add-field label { font-size: 11px; color: var(--muted); }
+  .add-form input[type="date"] { color-scheme: dark; }
   .add-form .add-actions { display: flex; gap: 8px; }
   .add-form .add-actions button {
     flex: 1; font-family: inherit; font-size: 13px; font-weight: 700; border: none;
@@ -327,13 +375,17 @@
       <span class="spacer" aria-hidden="true"></span>
     </div>
 
-    <div class="apps-stats" id="appsStats"></div>
+    <div class="funnel" id="appsFunnel"></div>
 
     <button class="add-btn" id="appAddBtn" type="button">+ Додати відгук</button>
     <form class="add-form" id="appForm" hidden>
       <input type="text" id="appCompany" placeholder="Назва компанії" required>
       <input type="url" id="appLink" placeholder="Посилання на вакансію">
       <textarea id="appDesc" placeholder="Короткий опис (позиція, умови, нотатки)"></textarea>
+      <div class="add-field">
+        <label for="appDeadline">Дедлайн наступного кроку (необов'язково)</label>
+        <input type="date" id="appDeadline">
+      </div>
       <div class="add-actions">
         <button type="button" class="add-cancel" id="appCancelBtn">Скасувати</button>
         <button type="submit" class="add-save">Зберегти</button>
@@ -394,6 +446,31 @@
     { id: 'doing', label: 'В роботі' },
     { id: 'done',  label: 'Готово'  }
   ];
+
+  var DEADLINES_KEY = 'job-plan-deadlines-v1';
+  var deadlines = {};
+  function loadDeadlines() {
+    try {
+      var raw = localStorage.getItem(DEADLINES_KEY);
+      deadlines = raw ? JSON.parse(raw) : {};
+    } catch (e) { deadlines = {}; }
+  }
+  function saveDeadlines() {
+    try { localStorage.setItem(DEADLINES_KEY, JSON.stringify(deadlines)); } catch (e) {}
+  }
+
+  function deadlineInfo(dateStr) {
+    if (!dateStr) return null;
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var d = new Date(dateStr + 'T00:00:00');
+    var diffDays = Math.round((d - today) / 86400000);
+    var text;
+    if (diffDays < 0) text = 'Прострочено на ' + Math.abs(diffDays) + ' дн.';
+    else if (diffDays === 0) text = 'Сьогодні';
+    else if (diffDays === 1) text = 'Завтра';
+    else text = 'Через ' + diffDays + ' дн.';
+    return { urgent: diffDays <= 2, text: text };
+  }
 
   // Weeks 10 and 11 combine into a single displayed block (shared tasks).
   var WEEKBLOCKS = [
@@ -561,6 +638,21 @@
     head.appendChild(sum);
     el.appendChild(head);
 
+    var chip = document.createElement('span');
+    chip.className = 'task-deadline';
+    chip.hidden = true;
+    el.appendChild(chip);
+
+    function refreshChip() {
+      var info = deadlineInfo(deadlines[t.id]);
+      if (!info) { chip.hidden = true; return; }
+      var urgent = info.urgent && getStatus(t.id) !== 'done';
+      chip.hidden = false;
+      chip.classList.toggle('is-urgent', urgent);
+      chip.textContent = (urgent ? '🔥 ' : '📅 ') + info.text;
+    }
+    refreshChip();
+
     var d = null, r = null;
     if (t.desc) {
       d = document.createElement('p');
@@ -576,11 +668,41 @@
       r.appendChild(document.createTextNode(t.result));
       el.appendChild(r);
     }
+
+    var deadlineEdit = document.createElement('div');
+    deadlineEdit.className = 'task-deadline-edit';
+    deadlineEdit.hidden = true;
+    var dLabel = document.createElement('label');
+    dLabel.appendChild(document.createTextNode('Дедлайн'));
+    var dInput = document.createElement('input');
+    dInput.type = 'date';
+    dInput.value = deadlines[t.id] || '';
+    dInput.addEventListener('change', function () {
+      if (dInput.value) deadlines[t.id] = dInput.value; else delete deadlines[t.id];
+      saveDeadlines();
+      refreshChip();
+    });
+    dLabel.appendChild(dInput);
+    var dClear = document.createElement('button');
+    dClear.type = 'button';
+    dClear.className = 'tde-clear';
+    dClear.textContent = 'Прибрати';
+    dClear.addEventListener('click', function () {
+      dInput.value = '';
+      delete deadlines[t.id];
+      saveDeadlines();
+      refreshChip();
+    });
+    deadlineEdit.appendChild(dLabel);
+    deadlineEdit.appendChild(dClear);
+    el.appendChild(deadlineEdit);
+
     if (d || r) {
       sum.addEventListener('click', function () {
         var opening = r ? r.hidden : !d.classList.contains('is-expanded');
         if (r) r.hidden = !opening;
         if (d) d.classList.toggle('is-expanded', opening);
+        deadlineEdit.hidden = !opening;
         sum.classList.toggle('is-open', opening);
       });
     }
@@ -601,6 +723,7 @@
         seg.querySelectorAll('button').forEach(function (b) {
           b.setAttribute('aria-pressed', String(b.dataset.key === s.id));
         });
+        refreshChip();
       });
       seg.appendChild(btn);
     });
@@ -660,6 +783,7 @@
   }
 
   load();
+  loadDeadlines();
   renderOverview();
   renderBoard();
 
@@ -679,12 +803,26 @@
 
   /* ---------- applications (job-application tracker) ---------- */
   var APPS_KEY = 'job-applications-v1';
+  var STAGES = [
+    { id: 'sent', label: 'Надіслано' },
+    { id: 'replied', label: 'Відповіли' },
+    { id: 'interview', label: 'Співбесіда' },
+    { id: 'offer', label: 'Офер' }
+  ];
+  function stageIndex(id) {
+    for (var i = 0; i < STAGES.length; i++) if (STAGES[i].id === id) return i;
+    return 0;
+  }
   var apps = [];
   function loadApps() {
     try {
       var raw = localStorage.getItem(APPS_KEY);
       apps = raw ? JSON.parse(raw) : [];
     } catch (e) { apps = []; }
+    apps.forEach(function (a) {
+      if (!a.stage) a.stage = a.status === 'replied' ? 'replied' : 'sent';
+      if (a.deadline === undefined) a.deadline = '';
+    });
   }
   function saveApps() {
     try { localStorage.setItem(APPS_KEY, JSON.stringify(apps)); } catch (e) {}
@@ -738,23 +876,50 @@
       el.appendChild(d);
     }
 
+    var deadlineRow = document.createElement('div');
+    deadlineRow.className = 'app-deadline';
+    var dlLabel = document.createElement('span');
+    dlLabel.className = 'app-deadline-label';
+    var dlInput = document.createElement('input');
+    dlInput.type = 'date';
+    dlInput.value = a.deadline || '';
+    function refreshDeadlineLabel() {
+      var info = deadlineInfo(a.deadline);
+      if (!info) {
+        dlLabel.textContent = 'Дедлайн';
+        dlLabel.classList.remove('is-urgent');
+      } else {
+        dlLabel.textContent = (info.urgent ? '🔥 ' : '📅 ') + info.text;
+        dlLabel.classList.toggle('is-urgent', info.urgent);
+      }
+    }
+    refreshDeadlineLabel();
+    dlInput.addEventListener('change', function () {
+      a.deadline = dlInput.value;
+      saveApps();
+      refreshDeadlineLabel();
+    });
+    deadlineRow.appendChild(dlLabel);
+    deadlineRow.appendChild(dlInput);
+    el.appendChild(deadlineRow);
+
     var seg = document.createElement('div');
     seg.className = 'app-seg';
     seg.setAttribute('role', 'group');
-    seg.setAttribute('aria-label', 'Статус: ' + a.company);
-    [{ id: 'waiting', label: 'Чекає відповіді' }, { id: 'replied', label: 'Відповіли' }].forEach(function (s) {
+    seg.setAttribute('aria-label', 'Етап: ' + a.company);
+    STAGES.forEach(function (s) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.dataset.key = s.id;
       btn.textContent = s.label;
-      btn.setAttribute('aria-pressed', String((a.status || 'waiting') === s.id));
+      btn.setAttribute('aria-pressed', String(a.stage === s.id));
       btn.addEventListener('click', function () {
-        a.status = s.id;
+        a.stage = s.id;
         saveApps();
         seg.querySelectorAll('button').forEach(function (b) {
           b.setAttribute('aria-pressed', String(b.dataset.key === s.id));
         });
-        renderAppsStats();
+        renderAppsFunnel();
       });
       seg.appendChild(btn);
     });
@@ -763,27 +928,50 @@
     return el;
   }
 
-  function renderAppsStats() {
-    var total = apps.length;
-    var replied = apps.filter(function (a) { return a.status === 'replied'; }).length;
-    var waiting = total - replied;
-    var stats = [
-      { num: total, label: 'Надіслано' },
-      { num: replied, label: 'Відповіли' },
-      { num: waiting, label: 'Чекають відповіді' }
-    ];
-    var wrap = document.getElementById('appsStats');
+  function renderAppsFunnel() {
+    var counts = STAGES.map(function (stage, i) {
+      return apps.filter(function (a) { return stageIndex(a.stage) >= i; }).length;
+    });
+    var base = counts[0] || 0;
+    var wrap = document.getElementById('appsFunnel');
     wrap.innerHTML = '';
-    stats.forEach(function (s) {
-      var card = document.createElement('div');
-      card.className = 'stat-card';
-      card.innerHTML = '<div class="stat-num">' + s.num + '</div><div class="stat-label">' + s.label + '</div>';
-      wrap.appendChild(card);
+    STAGES.forEach(function (stage, i) {
+      var row = document.createElement('div');
+      row.className = 'funnel-row';
+
+      var topRow = document.createElement('div');
+      topRow.className = 'funnel-top';
+      var name = document.createElement('span');
+      name.className = 'funnel-name';
+      name.textContent = stage.label;
+      var count = document.createElement('span');
+      count.className = 'funnel-count';
+      count.textContent = String(counts[i]);
+      topRow.appendChild(name);
+      topRow.appendChild(count);
+      row.appendChild(topRow);
+
+      var track = document.createElement('div');
+      track.className = 'funnel-bar-track';
+      var fill = document.createElement('div');
+      fill.className = 'funnel-bar-fill';
+      fill.style.width = (base ? Math.round(counts[i] / base * 100) : 0) + '%';
+      track.appendChild(fill);
+      row.appendChild(track);
+
+      if (i > 0) {
+        var conv = document.createElement('div');
+        conv.className = 'funnel-conv';
+        conv.textContent = counts[i - 1] ? 'Конверсія з попереднього етапу: ' + Math.round(counts[i] / counts[i - 1] * 100) + '%' : 'Немає даних';
+        row.appendChild(conv);
+      }
+
+      wrap.appendChild(row);
     });
   }
 
   function renderApps() {
-    renderAppsStats();
+    renderAppsFunnel();
     var list = document.getElementById('appsList');
     list.innerHTML = '';
     apps.forEach(function (a) { list.appendChild(appCardEl(a)); });
@@ -805,7 +993,8 @@
     if (!company) return;
     var link = document.getElementById('appLink').value.trim();
     var desc = document.getElementById('appDesc').value.trim();
-    apps.push({ id: 'a' + Date.now(), company: company, link: link, desc: desc, status: 'waiting' });
+    var deadline = document.getElementById('appDeadline').value;
+    apps.push({ id: 'a' + Date.now(), company: company, link: link, desc: desc, stage: 'sent', deadline: deadline });
     saveApps();
     appForm.reset();
     appForm.hidden = true;
@@ -911,5 +1100,8 @@
 
   loadSkills();
   renderSkills();
+
+  /* Test hook: exposes pure logic for tests/index.html. No effect on app behavior. */
+  window.__jobAppTest = { deadlineInfo: deadlineInfo, STAGES: STAGES, stageIndex: stageIndex };
 })();
 </script>

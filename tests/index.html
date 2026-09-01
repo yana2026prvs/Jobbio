@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Автотести — job-search app</title>
+<style>
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #0E0F0C; color: #F1F0EA;
+    padding: 28px 20px 60px; max-width: 680px; margin: 0 auto;
+  }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  p.hint { color: #9C9A90; font-size: 13px; margin: 0 0 22px; line-height: 1.5; }
+  #summary {
+    font-size: 14px; font-weight: 700; padding: 12px 16px; border-radius: 12px;
+    margin-bottom: 16px; border: 1px solid rgba(255,255,255,.1);
+  }
+  #summary.pass { background: rgba(214,242,75,.12); color: #D6F24B; border-color: rgba(214,242,75,.35); }
+  #summary.fail { background: rgba(255,111,91,.1); color: #FF6F5B; border-color: rgba(255,111,91,.4); }
+  #results { display: flex; flex-direction: column; gap: 6px; }
+  .row {
+    display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px;
+    border-radius: 10px; background: #1C1D19; border: 1px solid rgba(255,255,255,.08); font-size: 13px;
+  }
+  .row.pass { border-color: rgba(214,242,75,.3); }
+  .row.fail { border-color: rgba(255,111,91,.5); background: rgba(255,111,91,.07); }
+  .row .mark { flex: 0 0 auto; font-weight: 800; width: 18px; }
+  .row.pass .mark { color: #D6F24B; }
+  .row.fail .mark { color: #FF6F5B; }
+  .row .body { display: flex; flex-direction: column; gap: 3px; }
+  .row .name { font-weight: 600; }
+  .row .msg { color: #9C9A90; white-space: pre-wrap; font-family: ui-monospace, monospace; font-size: 12px; }
+  iframe#sut { position: absolute; width: 390px; height: 844px; left: -9999px; top: 0; border: 0; }
+</style>
+</head>
+<body>
+  <h1>Автотести: job-search app</h1>
+  <p class="hint">
+    Запускаються прямо в браузері, без npm/jsdom — завантажують <code>../index.html</code>
+    у прихований iframe і перевіряють реальний код застосунку.<br>
+    Обов'язково відкривати через локальний сервер (не подвійним кліком): <code>python3 -m http.server 8000</code>,
+    потім <code>http://localhost:8000/tests/</code> — інакше iframe не зможе читати localStorage застосунку через file:// origin.
+  </p>
+  <div id="summary">Виконується…</div>
+  <div id="results"></div>
+
+  <iframe id="sut"></iframe>
+
+  <script>
+  (function () {
+    var resultsEl = document.getElementById('results');
+    var summaryEl = document.getElementById('summary');
+    var results = [];
+
+    function record(name, ok, detail) {
+      results.push({ name: name, ok: ok, detail: detail || '' });
+      var row = document.createElement('div');
+      row.className = 'row ' + (ok ? 'pass' : 'fail');
+      row.innerHTML =
+        '<span class="mark">' + (ok ? '✓' : '✕') + '</span>' +
+        '<span class="body"><span class="name"></span>' + (detail ? '<span class="msg"></span>' : '') + '</span>';
+      row.querySelector('.name').textContent = name;
+      if (detail) row.querySelector('.msg').textContent = detail;
+      resultsEl.appendChild(row);
+    }
+
+    function assert(cond, msg) {
+      if (!cond) throw new Error(msg || 'assertion failed');
+    }
+
+    function addDays(date, n) {
+      var d = new Date(date);
+      d.setDate(d.getDate() + n);
+      return d;
+    }
+
+    function fmt(date) {
+      var y = date.getFullYear();
+      var m = String(date.getMonth() + 1).padStart(2, '0');
+      var d = String(date.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + d;
+    }
+
+    function loadIframe() {
+      return new Promise(function (resolve, reject) {
+        var ifr = document.getElementById('sut');
+        ifr.onload = function () { resolve(ifr.contentWindow); };
+        ifr.onerror = function () { reject(new Error('iframe не завантажився')); };
+        ifr.src = '../index.html?t=' + Date.now();
+      });
+    }
+
+    function clearAppStorage() {
+      ['job-plan-statuses-v1', 'job-plan-deadlines-v1', 'job-applications-v1', 'job-skills-v1']
+        .forEach(function (k) { localStorage.removeItem(k); });
+    }
+
+    async function run() {
+      var today = new Date(); today.setHours(0, 0, 0, 0);
+
+      clearAppStorage();
+      var w, T;
+      try {
+        w = await loadIframe();
+        T = w.__jobAppTest;
+        assert(T, 'window.__jobAppTest не знайдено в index.html');
+        record('Тестовий хук доступний', true);
+      } catch (e) {
+        record('Тестовий хук доступний', false, e.message);
+        finish();
+        return;
+      }
+
+      // ---- deadlineInfo ----
+      try {
+        assert(T.deadlineInfo('') === null, 'очікували null');
+        assert(T.deadlineInfo(undefined) === null, 'очікували null');
+        record('deadlineInfo: без дати -> null', true);
+      } catch (e) { record('deadlineInfo: без дати -> null', false, e.message); }
+
+      try {
+        var info = T.deadlineInfo(fmt(today));
+        assert(info.urgent === true && info.text === 'Сьогодні', JSON.stringify(info));
+        record('deadlineInfo: сьогодні -> термінове, "Сьогодні"', true);
+      } catch (e) { record('deadlineInfo: сьогодні -> термінове, "Сьогодні"', false, e.message); }
+
+      try {
+        var info = T.deadlineInfo(fmt(addDays(today, 1)));
+        assert(info.urgent === true && info.text === 'Завтра', JSON.stringify(info));
+        record('deadlineInfo: завтра -> термінове, "Завтра"', true);
+      } catch (e) { record('deadlineInfo: завтра -> термінове, "Завтра"', false, e.message); }
+
+      try {
+        var info = T.deadlineInfo(fmt(addDays(today, 2)));
+        assert(info.urgent === true && info.text === 'Через 2 дн.', JSON.stringify(info));
+        record('deadlineInfo: +2 дні -> ще термінове (межа)', true);
+      } catch (e) { record('deadlineInfo: +2 дні -> ще термінове (межа)', false, e.message); }
+
+      try {
+        var info = T.deadlineInfo(fmt(addDays(today, 3)));
+        assert(info.urgent === false, JSON.stringify(info));
+        record('deadlineInfo: +3 дні -> вже не термінове', true);
+      } catch (e) { record('deadlineInfo: +3 дні -> вже не термінове', false, e.message); }
+
+      try {
+        var info = T.deadlineInfo(fmt(addDays(today, -1)));
+        assert(info.urgent === true && info.text === 'Прострочено на 1 дн.', JSON.stringify(info));
+        record('deadlineInfo: вчора -> "Прострочено на 1 дн."', true);
+      } catch (e) { record('deadlineInfo: вчора -> "Прострочено на 1 дн."', false, e.message); }
+
+      // ---- STAGES / stageIndex ----
+      try {
+        var ids = T.STAGES.map(function (s) { return s.id; });
+        assert(JSON.stringify(ids) === JSON.stringify(['sent', 'replied', 'interview', 'offer']), JSON.stringify(ids));
+        record('STAGES: порядок етапів воронки', true);
+      } catch (e) { record('STAGES: порядок етапів воронки', false, e.message); }
+
+      try {
+        assert(T.stageIndex('offer') === 3, 'stageIndex(offer)=' + T.stageIndex('offer'));
+        assert(T.stageIndex('невідомий-етап') === 0, 'фолбек=' + T.stageIndex('невідомий-етап'));
+        record('stageIndex: коректні індекси + фолбек на 0', true);
+      } catch (e) { record('stageIndex: коректні індекси + фолбек на 0', false, e.message); }
+
+      // ---- plan page DOM ----
+      var d = w.document;
+      try {
+        var taskCount = d.querySelectorAll('.task').length;
+        assert(taskCount === 26, 'знайдено ' + taskCount);
+        record('План: рендериться 26 задач', true);
+      } catch (e) { record('План: рендериться 26 задач', false, e.message); }
+
+      try {
+        var ovCount = d.querySelectorAll('.ov-card').length;
+        assert(ovCount === 3, 'знайдено ' + ovCount);
+        record('План: рендериться 3 картки фаз', true);
+      } catch (e) { record('План: рендериться 3 картки фаз', false, e.message); }
+
+      var t1 = d.querySelector('.task[data-id="t1"]');
+      try {
+        t1.querySelector('.seg button[data-key="done"]').click();
+        assert(t1.dataset.status === 'done', 'data-status=' + t1.dataset.status);
+        var saved = JSON.parse(w.localStorage.getItem('job-plan-statuses-v1') || '{}');
+        assert(saved.t1 === 'done', JSON.stringify(saved));
+        record('План: клік "Готово" оновлює статус і зберігає в localStorage', true);
+      } catch (e) { record('План: клік "Готово" оновлює статус і зберігає в localStorage', false, e.message); }
+
+      try {
+        t1.querySelector('.detail-btn').click();
+        var dateInput = t1.querySelector('.task-deadline-edit input[type="date"]');
+        dateInput.value = fmt(addDays(today, 1));
+        dateInput.dispatchEvent(new w.Event('change', { bubbles: true }));
+        var chip = t1.querySelector('.task-deadline');
+        assert(chip.hidden === false, 'чіп прихований');
+        assert(chip.classList.contains('is-urgent') === false, 'очікували НЕ термінове для виконаної задачі: ' + chip.className);
+        record('План: дедлайн на вже виконаній задачі не "горить"', true);
+      } catch (e) { record('План: дедлайн на вже виконаній задачі не "горить"', false, e.message); }
+
+      try {
+        t1.querySelector('.seg button[data-key="queue"]').click();
+        var chip = t1.querySelector('.task-deadline');
+        assert(chip.classList.contains('is-urgent') === true, 'клас=' + chip.className);
+        assert(chip.textContent.indexOf('🔥') === 0, 'текст="' + chip.textContent + '"');
+        record('План: та сама задача знову "горить" після повернення в чергу', true);
+      } catch (e) { record('План: та сама задача знову "горить" після повернення в чергу', false, e.message); }
+
+      // ---- skills page DOM ----
+      try {
+        var skillCount = d.querySelectorAll('.skill-card').length;
+        assert(skillCount === 9, 'знайдено ' + skillCount);
+        record('Навички: рендериться 9 карток', true);
+      } catch (e) { record('Навички: рендериться 9 карток', false, e.message); }
+
+      // ---- apps funnel ----
+      try {
+        var rows = d.querySelectorAll('#appsFunnel .funnel-row');
+        assert(rows.length === 4, 'рядків=' + rows.length);
+        assert(rows[0].querySelector('.funnel-count').textContent === '0', 'очікували 0 на старті');
+        record('Відгуки: воронка з 4 етапів, порожня на старті', true);
+      } catch (e) { record('Відгуки: воронка з 4 етапів, порожня на старті', false, e.message); }
+
+      try {
+        d.getElementById('appAddBtn').click();
+        d.getElementById('appCompany').value = 'Test Co';
+        d.getElementById('appDeadline').value = fmt(addDays(today, -1));
+        d.getElementById('appForm').requestSubmit();
+        var cards = d.querySelectorAll('.app-card');
+        assert(cards.length === 1, 'карток=' + cards.length);
+        var sentCount = d.querySelector('#appsFunnel .funnel-row:nth-child(1) .funnel-count').textContent;
+        assert(sentCount === '1', 'Надіслано=' + sentCount);
+        record('Відгуки: додавання відгуку оновлює список і воронку', true);
+      } catch (e) { record('Відгуки: додавання відгуку оновлює список і воронку', false, e.message); }
+
+      var appCard = d.querySelector('.app-card');
+      try {
+        var label = appCard.querySelector('.app-deadline-label');
+        assert(label.classList.contains('is-urgent'), 'клас=' + label.className);
+        assert(label.textContent.indexOf('Прострочено') !== -1, 'текст="' + label.textContent + '"');
+        record('Відгуки: прострочений дедлайн підсвічується на картці', true);
+      } catch (e) { record('Відгуки: прострочений дедлайн підсвічується на картці', false, e.message); }
+
+      try {
+        appCard.querySelector('.app-seg button[data-key="interview"]').click();
+        var counts = Array.from(d.querySelectorAll('#appsFunnel .funnel-count')).map(function (el) { return el.textContent; });
+        assert(JSON.stringify(counts) === JSON.stringify(['1', '1', '1', '0']), JSON.stringify(counts));
+        record('Відгуки: воронка кумулятивна (Співбесіда рахується і в Надіслано/Відповіли)', true);
+      } catch (e) { record('Відгуки: воронка кумулятивна (Співбесіда рахується і в Надіслано/Відповіли)', false, e.message); }
+
+      try {
+        appCard.querySelector('.app-del').click();
+        var cards = d.querySelectorAll('.app-card');
+        assert(cards.length === 0, 'карток лишилось=' + cards.length);
+        var counts = Array.from(d.querySelectorAll('#appsFunnel .funnel-count')).map(function (el) { return el.textContent; });
+        assert(counts.every(function (c) { return c === '0'; }), JSON.stringify(counts));
+        record('Відгуки: видалення відгуку очищує список і воронку', true);
+      } catch (e) { record('Відгуки: видалення відгуку очищує список і воронку', false, e.message); }
+
+      // ---- migration of legacy data (old "status" field -> "stage") ----
+      clearAppStorage();
+      localStorage.setItem('job-applications-v1', JSON.stringify([
+        { id: 'legacy1', company: 'Legacy Co', link: '', desc: '', status: 'replied' }
+      ]));
+      try {
+        var w2 = await loadIframe();
+        var d2 = w2.document;
+        var card = d2.querySelector('.app-card[data-id="legacy1"]');
+        assert(card, 'картку legacy-відгуку не знайдено');
+        var repliedBtn = card.querySelector('.app-seg button[data-key="replied"]');
+        assert(repliedBtn.getAttribute('aria-pressed') === 'true', 'aria-pressed=' + repliedBtn.getAttribute('aria-pressed'));
+        var dateInput = card.querySelector('.app-deadline input[type="date"]');
+        assert(dateInput.value === '', 'value="' + dateInput.value + '"');
+        record('Міграція: старе поле status:"replied" стає етапом "Відповіли"', true);
+      } catch (e) { record('Міграція: старе поле status:"replied" стає етапом "Відповіли"', false, e.message); }
+
+      clearAppStorage();
+      finish();
+    }
+
+    function finish() {
+      var passed = results.filter(function (r) { return r.ok; }).length;
+      var total = results.length;
+      summaryEl.className = passed === total ? 'pass' : 'fail';
+      summaryEl.textContent = passed === total
+        ? '✓ Усі тести пройшли: ' + passed + '/' + total
+        : '✕ Провалено ' + (total - passed) + ' з ' + total + ' тестів';
+    }
+
+    run();
+  })();
+  </script>
+</body>
+</html>
