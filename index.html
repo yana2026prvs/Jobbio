@@ -278,6 +278,22 @@
     border: 1px solid var(--border); border-radius: 10px; padding: 6px 8px; color-scheme: dark;
   }
 
+  /* ---------- apps filter ---------- */
+  .apps-filter { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .apps-filter input[type="search"] {
+    font-family: inherit; font-size: 13px; color: var(--ink); background: var(--tile);
+    border: 1px solid var(--border); border-radius: 999px; padding: 10px 14px; width: 100%;
+    -webkit-appearance: none; appearance: none;
+  }
+  .apps-stage-filter { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  .apps-stage-filter::-webkit-scrollbar { display: none; }
+  .apps-stage-filter button {
+    flex: 0 0 auto; font-family: inherit; font-size: 12px; font-weight: 600;
+    padding: 8px 14px; border: none; border-radius: 999px; background: var(--tile);
+    color: var(--muted-soft); cursor: pointer; white-space: nowrap;
+  }
+  .apps-stage-filter button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
   /* ---------- add application form ---------- */
   .add-btn {
     width: 100%; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ink);
@@ -376,6 +392,11 @@
     </div>
 
     <div class="funnel" id="appsFunnel"></div>
+
+    <div class="apps-filter">
+      <input type="search" id="appsSearch" placeholder="Пошук за назвою компанії" aria-label="Пошук за назвою компанії">
+      <div class="apps-stage-filter" id="appsStageFilter" role="group" aria-label="Фільтр за етапом"></div>
+    </div>
 
     <button class="add-btn" id="appAddBtn" type="button">+ Додати відгук</button>
     <form class="add-form" id="appForm" hidden>
@@ -970,12 +991,52 @@
     });
   }
 
+  var appsFilter = { search: '', stage: 'all' };
+  function matchesFilter(a) {
+    if (appsFilter.stage !== 'all' && a.stage !== appsFilter.stage) return false;
+    if (appsFilter.search && a.company.toLowerCase().indexOf(appsFilter.search) === -1) return false;
+    return true;
+  }
+  function buildStageFilterChips() {
+    var wrap = document.getElementById('appsStageFilter');
+    var options = [{ id: 'all', label: 'Всі' }].concat(STAGES);
+    options.forEach(function (opt) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.dataset.key = opt.id;
+      btn.textContent = opt.label;
+      btn.setAttribute('aria-pressed', String(appsFilter.stage === opt.id));
+      btn.addEventListener('click', function () {
+        appsFilter.stage = opt.id;
+        wrap.querySelectorAll('button').forEach(function (b) {
+          b.setAttribute('aria-pressed', String(b.dataset.key === opt.id));
+        });
+        renderApps();
+      });
+      wrap.appendChild(btn);
+    });
+  }
+  document.getElementById('appsSearch').addEventListener('input', function (e) {
+    appsFilter.search = e.target.value.trim().toLowerCase();
+    renderApps();
+  });
+
   function renderApps() {
     renderAppsFunnel();
     var list = document.getElementById('appsList');
     list.innerHTML = '';
-    apps.forEach(function (a) { list.appendChild(appCardEl(a)); });
-    document.getElementById('appsEmpty').hidden = apps.length > 0;
+    var filtered = apps.filter(matchesFilter);
+    filtered.forEach(function (a) { list.appendChild(appCardEl(a)); });
+    var emptyEl = document.getElementById('appsEmpty');
+    if (apps.length === 0) {
+      emptyEl.hidden = false;
+      emptyEl.textContent = 'Ще немає жодного відгуку — додай перший вище.';
+    } else if (filtered.length === 0) {
+      emptyEl.hidden = false;
+      emptyEl.textContent = 'Нічого не знайдено за цим фільтром.';
+    } else {
+      emptyEl.hidden = true;
+    }
   }
 
   var appForm = document.getElementById('appForm');
@@ -1001,6 +1062,7 @@
     renderApps();
   });
 
+  buildStageFilterChips();
   loadApps();
   renderApps();
 

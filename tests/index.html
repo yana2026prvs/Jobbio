@@ -246,14 +246,52 @@
         record('Відгуки: воронка кумулятивна (Співбесіда рахується і в Надіслано/Відповіли)', true);
       } catch (e) { record('Відгуки: воронка кумулятивна (Співбесіда рахується і в Надіслано/Відповіли)', false, e.message); }
 
+      // ---- filter + search (add a second app so filtering is meaningful) ----
       try {
-        appCard.querySelector('.app-del').click();
+        d.getElementById('appAddBtn').click();
+        d.getElementById('appCompany').value = 'Другий Тест';
+        d.getElementById('appForm').requestSubmit();
+        var search = d.getElementById('appsSearch');
+        search.value = 'test co';
+        search.dispatchEvent(new w.Event('input', { bubbles: true }));
+        var visible = Array.from(d.querySelectorAll('.app-card .app-company')).map(function (el) { return el.textContent; });
+        assert(JSON.stringify(visible) === JSON.stringify(['Test Co']), JSON.stringify(visible));
+        record('Відгуки: пошук за назвою компанії фільтрує список', true);
+      } catch (e) { record('Відгуки: пошук за назвою компанії фільтрує список', false, e.message); }
+
+      try {
+        var search = d.getElementById('appsSearch');
+        search.value = '';
+        search.dispatchEvent(new w.Event('input', { bubbles: true }));
+        d.getElementById('appsStageFilter').querySelector('button[data-key="interview"]').click();
+        var visible = Array.from(d.querySelectorAll('.app-card .app-company')).map(function (el) { return el.textContent; });
+        assert(JSON.stringify(visible) === JSON.stringify(['Test Co']), JSON.stringify(visible));
+        record('Відгуки: фільтр за етапом показує лише відповідні картки', true);
+      } catch (e) { record('Відгуки: фільтр за етапом показує лише відповідні картки', false, e.message); }
+
+      try {
+        d.getElementById('appsStageFilter').querySelector('button[data-key="offer"]').click();
+        var empty = d.getElementById('appsEmpty');
+        assert(empty.hidden === false && empty.textContent.indexOf('Нічого не знайдено') !== -1, empty.textContent);
+        assert(d.querySelectorAll('.app-card').length === 0, 'карток видно=' + d.querySelectorAll('.app-card').length);
+        record('Відгуки: порожній стан з поясненням, коли фільтр нічого не знаходить', true);
+      } catch (e) { record('Відгуки: порожній стан з поясненням, коли фільтр нічого не знаходить', false, e.message); }
+
+      try {
+        d.getElementById('appsStageFilter').querySelector('button[data-key="all"]').click();
+        var cards = d.querySelectorAll('.app-card');
+        assert(cards.length === 2, 'карток=' + cards.length);
+        record('Відгуки: фільтр "Всі" знову показує всі картки', true);
+      } catch (e) { record('Відгуки: фільтр "Всі" знову показує всі картки', false, e.message); }
+
+      try {
+        Array.from(d.querySelectorAll('.app-del')).forEach(function (btn) { btn.click(); });
         var cards = d.querySelectorAll('.app-card');
         assert(cards.length === 0, 'карток лишилось=' + cards.length);
         var counts = Array.from(d.querySelectorAll('#appsFunnel .funnel-count')).map(function (el) { return el.textContent; });
         assert(counts.every(function (c) { return c === '0'; }), JSON.stringify(counts));
-        record('Відгуки: видалення відгуку очищує список і воронку', true);
-      } catch (e) { record('Відгуки: видалення відгуку очищує список і воронку', false, e.message); }
+        record('Відгуки: видалення відгуків очищує список і воронку', true);
+      } catch (e) { record('Відгуки: видалення відгуків очищує список і воронку', false, e.message); }
 
       // ---- migration of legacy data (old "status" field -> "stage") ----
       clearAppStorage();
