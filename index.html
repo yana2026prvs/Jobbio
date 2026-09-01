@@ -1,0 +1,915 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    color-scheme: dark;
+    --bg: #0E0F0C;
+    --surface: #1C1D19;
+    --tile: rgba(255,255,255,.06);
+    --tile-btn: rgba(255,255,255,.08);
+    --seg-idle: rgba(255,255,255,.07);
+    --ink: #F1F0EA;
+    --muted: #9C9A90;
+    --muted-soft: #86847A;
+    --strike: #6E6D64;
+    --border: rgba(255,255,255,.09);
+    --lime: #D6F24B;
+    --lime-ink: #14150B;
+    --grad-1a: #C9E0A0; --grad-1b: #7E9B4E;
+    --grad-2a: #E8C3AE; --grad-2b: #C98A6E;
+    --grad-3a: #C8D8EE; --grad-3b: #7E93B8;
+    --stage: #08090A;
+    --bezel: #0A0A0B;
+    --bezel-edge: rgba(255,255,255,.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--stage); }
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--stage);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 14px;
+    overflow-x: hidden;
+  }
+
+  /* ---------- phone frame ---------- */
+  .device-stage { width: 100%; display: flex; justify-content: center; }
+  .phone-shell {
+    position: relative;
+    width: min(390px, 100%);
+    height: min(844px, 88vh);
+    background: var(--bezel);
+    border-radius: 54px;
+    padding: 14px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,.45), 0 0 0 1px var(--bezel-edge) inset;
+    flex: 0 0 auto;
+  }
+  .phone-screen {
+    position: relative;
+    width: 100%; height: 100%;
+    background: var(--bg);
+    border-radius: 40px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .phone-screen::-webkit-scrollbar { display: none; }
+  .phone-notch {
+    position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    width: 96px; height: 26px; background: var(--bezel); border-radius: 20px;
+    z-index: 5; pointer-events: none;
+  }
+  .phone-home-bar {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 4px; border-radius: 999px; background: rgba(255,255,255,.55);
+    z-index: 5; pointer-events: none;
+  }
+  @media (max-width: 460px) {
+    body { padding: 0; }
+    .phone-shell { width: 100%; height: 100dvh; border-radius: 0; padding: 0; box-shadow: none; }
+    .phone-screen { border-radius: 0; }
+    .phone-notch, .phone-home-bar { display: none; }
+  }
+
+  .app-page { padding: 52px 18px 24px; line-height: 1.4; -webkit-font-smoothing: antialiased; }
+  .app-page .wrap { max-width: 100%; margin: 0 auto; }
+
+  /* ---------- header ---------- */
+  .app-page .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 10px; }
+  .app-page .icon-btn {
+    width: 36px; height: 36px; border-radius: 999px; background: var(--tile-btn);
+    border: none; display: flex; align-items: center; justify-content: center;
+    font-size: 15px; cursor: pointer; color: var(--ink); flex: 0 0 auto;
+  }
+  .app-page .head-titles { text-align: center; flex: 1; }
+  .app-page .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+  .app-page .head-titles h1 { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+  .app-page .spacer { width: 36px; flex: 0 0 auto; }
+
+  /* ---------- phase overview ---------- */
+  .app-page .overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 22px; }
+  .app-page .ov-card {
+    position: relative; overflow: hidden; border-radius: 20px; padding: 14px 12px;
+    color: var(--ink); display: flex; flex-direction: column; align-items: flex-start; text-align: left;
+    justify-content: space-between; gap: 12px; min-height: 84px;
+    border: 1px solid rgba(255,255,255,.10);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  }
+  .app-page .ov-card[data-phase="0"] { background: linear-gradient(160deg, rgba(201,224,160,.42), rgba(126,155,78,.42)); }
+  .app-page .ov-card[data-phase="1"] { background: linear-gradient(160deg, rgba(232,195,174,.42), rgba(201,138,110,.42)); }
+  .app-page .ov-card[data-phase="2"] { background: linear-gradient(160deg, rgba(200,216,238,.42), rgba(126,147,184,.42)); }
+  .app-page .ov-name { font-size: 15px; font-weight: 500; line-height: 1.25; position: relative; text-align: left; }
+  .app-page .ov-progress { display: flex; align-items: center; gap: 6px; position: relative; }
+  .app-page .ov-count { font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+  .app-page .ov-check {
+    width: 18px; height: 18px; border-radius: 50%; background: var(--lime);
+    display: none; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: var(--lime-ink);
+  }
+  .app-page .ov-card.ov-complete .ov-check { display: flex; }
+
+  /* ---------- board ---------- */
+  .app-page .phase-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 22px 0 10px; }
+  .app-page .phase-head:first-of-type { margin-top: 0; }
+  .app-page .phase-head .name { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  .app-page .phase-head .span { font-size: 11px; color: var(--muted); flex: 0 1 auto; text-align: right; }
+
+  .app-page .week-block { margin-bottom: 16px; }
+  .app-page .week-block h2 { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; letter-spacing: -.005em; }
+
+  /* ---------- task cards ---------- */
+  .app-page .task-list { display: flex; flex-direction: column; gap: 8px; }
+  .app-page .task {
+    background: var(--surface); border-radius: 24px; padding: 15px 15px 13px;
+    display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border);
+  }
+  .app-page .task-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .app-page .flag {
+    display: inline-block; font-size: 10.5px; font-weight: 700; background: var(--ink); color: var(--bg);
+    padding: 3px 10px; border-radius: 999px; margin-bottom: 6px; align-self: flex-start;
+  }
+  .app-page .task-title { font-weight: 600; font-size: 14.5px; line-height: 1.3; }
+  .app-page .task[data-status="done"] .task-title,
+  .app-page .task[data-status="done"] .task-desc { text-decoration: line-through; color: var(--strike); }
+  .app-page .detail-btn {
+    flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
+    font-size: 12.5px; font-weight: 600; color: var(--ink); padding: 2px 0;
+  }
+  .app-page .detail-btn::after { content: '›'; font-size: 15px; transition: transform .15s ease; }
+  .app-page .detail-btn-wrap.is-open .detail-btn::after { transform: rotate(90deg); }
+  .app-page .task-desc {
+    font-size: 12px; color: var(--muted); line-height: 1.5;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  }
+  .app-page .task-desc.is-expanded { -webkit-line-clamp: unset; overflow: visible; }
+  .app-page .task-result { font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+  .app-page .task-result b { color: var(--ink); font-weight: 700; }
+
+  .app-page .seg { display: flex; gap: 4px; background: var(--tile); border-radius: 999px; padding: 4px; }
+  .app-page .seg button {
+    flex: 1; font-family: inherit; font-size: 12.5px; font-weight: 600;
+    padding: 8px 6px; border: none; background: var(--seg-idle); color: var(--muted-soft);
+    cursor: pointer; border-radius: 999px; white-space: nowrap; transition: background .12s, color .12s;
+  }
+  .app-page .seg button[data-key="queue"][aria-pressed="true"],
+  .app-page .seg button[data-key="doing"][aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .app-page .seg button[data-key="done"][aria-pressed="true"] { background: var(--lime); color: var(--lime-ink); }
+
+  .app-page :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .app-page .foot {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    padding: 4px 2px 18px; font-size: 11.5px; color: var(--muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .app-page *, .app-page *::before { transition: none !important; }
+  }
+
+  /* ---------- multi-page + bottom nav ---------- */
+  .app-page { padding-bottom: 92px; }
+  .app-page[hidden] { display: none; }
+
+  .bottom-nav {
+    position: absolute; left: 0; right: 0; bottom: 14px; z-index: 6;
+    display: flex; justify-content: center; pointer-events: none;
+  }
+  .bottom-nav .bn-pill {
+    pointer-events: auto; display: flex; gap: 4px; align-items: center;
+    background: rgba(255,255,255,.6); backdrop-filter: blur(16px);
+    border-radius: 999px; padding: 6px; box-shadow: 0 8px 24px -8px rgba(0,0,0,.18);
+  }
+  :root:not([data-theme="light"]) .bottom-nav .bn-pill { background: rgba(35,36,32,.75); }
+  :root[data-theme="dark"] .bottom-nav .bn-pill { background: rgba(35,36,32,.75); }
+  .bottom-nav button {
+    display: flex; align-items: center; gap: 6px; border: none; cursor: pointer;
+    font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted);
+    background: transparent; padding: 10px 16px; border-radius: 999px; white-space: nowrap;
+  }
+  .bottom-nav button[aria-current="true"] { background: var(--ink); color: var(--bg); }
+  .bottom-nav button .bn-ic { font-size: 14px; line-height: 1; }
+
+  /* ---------- applications stats ---------- */
+  .apps-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 14px 10px; display: flex; flex-direction: column; gap: 4px; align-items: flex-start;
+  }
+  .stat-num { font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+  .stat-label { font-size: 10.5px; color: var(--muted); font-weight: 500; line-height: 1.25; }
+
+  /* ---------- application cards ---------- */
+  .apps-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .app-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 24px;
+    padding: 15px 15px 13px; display: flex; flex-direction: column; gap: 10px; position: relative;
+  }
+  .app-card .app-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .app-card .app-company { font-weight: 700; font-size: 14.5px; line-height: 1.3; }
+  .app-card .app-del {
+    flex: 0 0 auto; border: none; background: none; color: var(--muted); cursor: pointer;
+    font-size: 15px; line-height: 1; padding: 2px 4px;
+  }
+  .app-card .app-link {
+    font-size: 12px; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+    background: var(--tile); border-radius: 999px; padding: 5px 10px; align-self: flex-start; max-width: 100%;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .app-card .app-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .app-card .app-seg { display: flex; gap: 4px; background: var(--tile); border-radius: 999px; padding: 4px; }
+  .app-card .app-seg button {
+    flex: 1; font-family: inherit; font-size: 12.5px; font-weight: 600;
+    padding: 8px 6px; border: none; background: var(--seg-idle); color: var(--muted-soft);
+    cursor: pointer; border-radius: 999px; white-space: nowrap; transition: background .12s, color .12s;
+  }
+  .app-card .app-seg button[data-key="waiting"][aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .app-card .app-seg button[data-key="replied"][aria-pressed="true"] { background: var(--lime); color: var(--lime-ink); }
+  .apps-empty { font-size: 12.5px; color: var(--muted); padding: 10px 2px 20px; }
+  .apps-empty[hidden] { display: none; }
+
+  /* ---------- add application form ---------- */
+  .add-btn {
+    width: 100%; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ink);
+    background: var(--tile-btn); border: 1px dashed var(--border); border-radius: 999px;
+    padding: 12px; cursor: pointer; margin-bottom: 14px;
+  }
+  .add-form {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 22px;
+    padding: 14px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;
+  }
+  .add-form[hidden] { display: none; }
+  .add-form input, .add-form textarea {
+    font-family: inherit; font-size: 13px; color: var(--ink); background: var(--tile);
+    border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; width: 100%; resize: vertical;
+  }
+  .add-form textarea { min-height: 56px; }
+  .add-form .add-actions { display: flex; gap: 8px; }
+  .add-form .add-actions button {
+    flex: 1; font-family: inherit; font-size: 13px; font-weight: 700; border: none;
+    border-radius: 999px; padding: 10px; cursor: pointer;
+  }
+  .add-form .add-save { background: var(--ink); color: var(--bg); }
+  .add-form .add-cancel { background: var(--tile); color: var(--muted); }
+
+  /* ---------- skills page ---------- */
+  .track-note {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 22px;
+    padding: 16px; margin-bottom: 18px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .track-note h3 { font-size: 13.5px; font-weight: 700; }
+  .track-note p { font-size: 12px; color: var(--muted); line-height: 1.55; }
+  .track-note .track-tag {
+    display: inline-block; font-size: 10.5px; font-weight: 700; background: var(--lime); color: var(--lime-ink);
+    padding: 3px 10px; border-radius: 999px; align-self: flex-start;
+  }
+
+  .skills-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .skill-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 24px;
+    padding: 15px 15px 13px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .skill-card .skill-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .skill-card .skill-title { font-weight: 700; font-size: 14.5px; line-height: 1.3; }
+  .skill-card .skill-freq {
+    flex: 0 0 auto; font-size: 10.5px; font-weight: 600; color: var(--muted);
+    background: var(--tile); border-radius: 999px; padding: 4px 9px; white-space: nowrap;
+  }
+  .skill-card .skill-desc { font-size: 12px; color: var(--muted); line-height: 1.55; }
+  .skill-card .skill-seg { display: flex; gap: 4px; background: var(--tile); border-radius: 999px; padding: 4px; }
+  .skill-card .skill-seg button {
+    flex: 1; font-family: inherit; font-size: 12px; font-weight: 600;
+    padding: 8px 5px; border: none; background: var(--seg-idle); color: var(--muted-soft);
+    cursor: pointer; border-radius: 999px; white-space: nowrap; transition: background .12s, color .12s;
+  }
+  .skill-card .skill-seg button[data-key="queue"][aria-pressed="true"],
+  .skill-card .skill-seg button[data-key="doing"][aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .skill-card .skill-seg button[data-key="done"][aria-pressed="true"] { background: var(--lime); color: var(--lime-ink); }
+</style>
+<div class="device-stage">
+<div class="phone-shell">
+<div class="phone-notch" aria-hidden="true"></div>
+<div class="phone-screen">
+<div id="plan" class="app-page">
+  <div class="wrap">
+    <div class="topbar">
+      <span class="spacer" aria-hidden="true"></span>
+      <div class="head-titles">
+        <p class="eyebrow">13 тижнів · продуктовий UI/UX</p>
+        <h1>План виходу на ринок праці</h1>
+      </div>
+      <span class="spacer" aria-hidden="true"></span>
+    </div>
+
+    <div class="overview" id="overview"></div>
+
+    <div class="board" id="board"></div>
+
+    <div class="foot">
+      <span id="saveState">Статуси зберігаються автоматично в цьому браузері</span>
+    </div>
+  </div>
+</div>
+
+<div id="apps" class="app-page" hidden>
+  <div class="wrap">
+    <div class="topbar">
+      <span class="spacer" aria-hidden="true"></span>
+      <div class="head-titles">
+        <p class="eyebrow">Пошук на повну</p>
+        <h1>Відгуки на вакансії</h1>
+      </div>
+      <span class="spacer" aria-hidden="true"></span>
+    </div>
+
+    <div class="apps-stats" id="appsStats"></div>
+
+    <button class="add-btn" id="appAddBtn" type="button">+ Додати відгук</button>
+    <form class="add-form" id="appForm" hidden>
+      <input type="text" id="appCompany" placeholder="Назва компанії" required>
+      <input type="url" id="appLink" placeholder="Посилання на вакансію">
+      <textarea id="appDesc" placeholder="Короткий опис (позиція, умови, нотатки)"></textarea>
+      <div class="add-actions">
+        <button type="button" class="add-cancel" id="appCancelBtn">Скасувати</button>
+        <button type="submit" class="add-save">Зберегти</button>
+      </div>
+    </form>
+
+    <p class="apps-empty" id="appsEmpty" hidden>Ще немає жодного відгуку — додай перший вище.</p>
+    <div class="apps-list" id="appsList"></div>
+
+    <div class="foot">
+      <span>Дані зберігаються автоматично в цьому браузері</span>
+    </div>
+  </div>
+</div>
+
+<div id="skills" class="app-page" hidden>
+  <div class="wrap">
+    <div class="topbar">
+      <span class="spacer" aria-hidden="true"></span>
+      <div class="head-titles">
+        <p class="eyebrow">На основі 7 вакансій</p>
+        <h1>Навички і скіли</h1>
+      </div>
+      <span class="spacer" aria-hidden="true"></span>
+    </div>
+
+    <div class="track-note">
+      <span class="track-tag">Пріоритет: Трек A</span>
+      <h3>B2B/SaaS-дашборди з адаптацією під mobile</h3>
+      <p>Найбільше перекриття вимог (вакансії 1, 3, 4) і найближче до цілі "мобільні додатки + SaaS". Найбільша діра — жоден готовий кейс явно не показує адаптацію складного desktop-екрана (таблиця/календар/фільтри) під mobile з повним покриттям станів. Трек B (споживчий mobile/fintech, вакансії 5, 6) — другорядний; motion (Lottie/Jitter/AE) і JIRA/Photoshop — свідомо ігнорувати зараз.</p>
+    </div>
+
+    <div class="skills-list" id="skillsList"></div>
+
+    <div class="foot">
+      <span>Статуси зберігаються автоматично в цьому браузері</span>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <div class="bn-pill">
+    <button type="button" id="navPlan" aria-current="true"><span class="bn-ic">🗂</span>План</button>
+    <button type="button" id="navApps" aria-current="false"><span class="bn-ic">✉️</span>Відгуки</button>
+    <button type="button" id="navSkills" aria-current="false"><span class="bn-ic">🎯</span>Навички</button>
+  </div>
+</div>
+</div>
+<div class="phone-home-bar" aria-hidden="true"></div>
+</div>
+</div>
+<script>
+(function () {
+  var STATE_KEY = 'job-plan-statuses-v1';
+
+  var STATUSES = [
+    { id: 'queue', label: 'В черзі' },
+    { id: 'doing', label: 'В роботі' },
+    { id: 'done',  label: 'Готово'  }
+  ];
+
+  // Weeks 10 and 11 combine into a single displayed block (shared tasks).
+  var WEEKBLOCKS = [
+    { phase: 'Кейси', label: 'Тиждень 1 — інвентаризація', tasks: [
+      { id: 't1', title: 'Зібрати всі матеріали по проєктах',
+        desc: 'Одна папка на проєкт: фінальні макети, проміжні версії, чернетки, записи з обговорень, схеми й флоу. Проміжні версії важливіші за фінальні — саме вони доводять, що рішення було вибором, а не єдиним варіантом, який спав на думку.',
+        result: '5 папок з відсортованими файлами.' },
+      { id: 't2', title: 'Перевірити договори на NDA', flag: 'Критичний крок',
+        desc: 'Перечитати умови по маркетплейсу й обох криптоплатформах на пункт про конфіденційність. Якщо він є — коротко написати замовнику й попросити дозвіл показати роботу в портфоліо; більшість погоджується. Якщо дозволу немає — кейс робиться без назви клієнта і з узагальненими даними.',
+        result: 'по кожному проєкту рішення — показувати як є / знеособити.' },
+      { id: 't3', title: 'Виписати 10–15 цільових вакансій',
+        desc: 'Тільки ті, на які реально хочеш подаватись. З кожної виписати повторювані формулювання: які задачі, які інструменти, якими словами описують очікуваний результат. Це не про підлаштування — це словник, яким кейс має бути написаний, щоб читач упізнав у ньому себе.',
+        result: 'список вакансій + 20–30 ключових формулювань.' }
+    ]},
+    { phase: 'Кейси', label: 'Тиждень 2 — маркетплейс, текст', tasks: [
+      { id: 't4', title: 'Контекст, роль, задача',
+        desc: 'Хто замовник, що за продукт, на якій стадії ти зайшла, за що відповідала особисто і хто ще був у команді. Далі — бізнес-задача, а не дизайн-задача: «зробити каталог» це не задача, «продавці не доводили товар до публікації» — задача. Пиши текстом, без макетів: візуал на цьому етапі тільки заважає.',
+        result: '2–3 абзаци вступу.' },
+      { id: 't5', title: 'Рішення й розвилки', flag: 'Критичний крок',
+        desc: 'Обери 2–3 найскладніші місця — ролі й права, пошук і фільтри, чекаут — і по кожному опиши: які були обмеження, які варіанти розглядала, чому обрала цей і від чого відмовилась. Описана й відкинута альтернатива — найсильніша частина будь-якого кейсу, бо показує мислення, а не смак.',
+        result: '2–3 розібрані рішення з альтернативами.' },
+      { id: 't6', title: 'Результат і метрики',
+        desc: 'Виписати наявні цифри й прив’язати кожну до конкретного рішення — цифра без причини нічого не доводить. Наприкінці додати абзац «що зробила б інакше»: це читається як зрілість, а не як визнання помилки.',
+        result: 'блок результату, з якого відкриється кейс.' }
+    ]},
+    { phase: 'Кейси', label: 'Тиждень 3 — маркетплейс, візуал', tasks: [
+      { id: 't7', title: 'Оформити кейс маркетплейсу візуально',
+        desc: 'Екрани добираються під готовий текст, а не текст під екрани. Кожен екран іде з підписом, що саме на ньому дивитись і яке рішення він ілюструє. Галереї гарних мокапів без підписів прогортують, не читаючи.',
+        result: 'перший повністю готовий кейс.' },
+      { id: 't8', title: 'Чернетка тексту крипто-кейсу',
+        desc: 'Той самий каркас, але акцент інший: складність станів і ціна помилки користувача. Випиши всі стани, які довелось опрацювати — очікування підтвердження, помилка мережі, недостатній баланс, підозріла адреса. Сам їх перелік уже працює як доказ рівня задачі.',
+        result: 'чернетка тексту + перелік опрацьованих станів.' }
+    ]},
+    { phase: 'Кейси', label: 'Тиждень 4 — крипто-кейс', tasks: [
+      { id: 't9', title: 'Довести текст крипто-кейсу до готовності',
+        desc: 'Метрик немає, тому цінність доводиться інакше: складність задачі, обґрунтування рішень, факт виходу в продакшн, реакція замовника. Додай абзац «що я б заміряла, якби мала доступ» — він прямо показує продуктове мислення. Цифри не вигадувати: на співбесіді це розкривається за дві хвилини.',
+        result: 'готовий текст другого кейсу.' },
+      { id: 't10', title: 'Оформити крипто-кейс візуально',
+        desc: 'Знеособити те, що просив замовник: логотип, назви, реальні суми, адреси гаманців. Решта показується як є. Формулювання «дані змінені за умовами співпраці з замовником» нікого не бентежить.',
+        result: 'другий повністю готовий кейс.' }
+    ]},
+    { phase: 'Кейси', label: 'Тиждень 5 — третій кейс, візуал', tasks: [
+      { id: 't26', title: 'Оформити третій кейс візуально',
+        desc: 'Контент і рішення тут уже готові приблизно на 80% — залишається зібрати екрани під наявний текст і підписати, яке рішення ілюструє кожен з них. Той самий принцип, що й у перших двох кейсах: спершу текст, візуал добирається під нього, а не навпаки.',
+        result: 'третій повністю готовий кейс на сайті.' }
+    ]},
+    { phase: 'Сайт і CV', label: 'Тиждень 6 — каркас сайту', tasks: [
+      { id: 't11', title: 'Обрати інструмент і структуру',
+        desc: 'Framer — якщо хочеш контроль над версткою й анімацією, Tilda — якщо потрібно швидше. Структура мінімальна: головна, сторінка кейсу, про мене, контакт. Писати сайт кодом самій зараз не варто — це окремий місяць, який не наближає до офера.',
+        result: 'обраний інструмент і карта сторінок.' },
+      { id: 't12', title: 'Зробити головну сторінку',
+        desc: 'Перший екран за п’ять секунд відповідає на три питання: хто ти, що робиш, для кого. Далі перелік робіт, де під кожною — один рядок результату, а не назва клієнта. Контакт має бути видно, не прокручуючи сторінку до кінця.',
+        result: 'зібрана головна.' }
+    ]},
+    { phase: 'Сайт і CV', label: 'Тиждень 7 — збірка', tasks: [
+      { id: 't13', title: 'Залити два кейси на сайт',
+        desc: 'Ціль — «достатньо добре», не ідеально. Порожні розділи прибрати повністю: «coming soon» на сайті дизайнера читається гірше, ніж їх відсутність.',
+        result: 'робочий сайт із двома кейсами.' },
+      { id: 't14', title: 'Перевірити мобільну версію і швидкість',
+        desc: 'Відкрий з телефона й прочитай кейс до кінця — саме так його читатиме половина рекрутерів, часто між зустрічами. Окремо перевір вагу зображень: важкі макети на мобільному інтернеті просто не встигнуть завантажитись.',
+        result: 'сайт, який нормально читається з телефона.' }
+    ]},
+    { phase: 'Сайт і CV', label: 'Тиждень 8 — документи', tasks: [
+      { id: 't15', title: 'CV на одну сторінку', flag: 'Критичний крок',
+        desc: 'PDF, одна сторінка. Не перелік обов’язків, а результати: що було, що зробила, що змінилось. Формулювання беруться з уже написаних кейсів — саме тому CV пишеться після них, а не до.',
+        result: 'CV у PDF з посиланням на сайт.' },
+      { id: 't16', title: 'Профілі на Djinni та LinkedIn',
+        desc: 'Djinni для українського ринку, LinkedIn для міжнародного. Позиціонування скрізь однакове — розбіжності помітні й підривають довіру. Найбільше важать заголовок, перші два рядки опису й посилання на портфоліо: далі більшість не читає.',
+        result: 'два заповнені профілі з однаковим позиціонуванням.' },
+      { id: 't17', title: 'Шаблон супровідного листа',
+        desc: 'Каркас на 5–7 речень: чому саме ця компанія, який твій кейс найближчий до їхнього продукту, що конкретно можеш дати. Під кожну вакансію змінюється приблизно на 20% — цього достатньо, щоб лист не читався як розсилка.',
+        result: 'шаблон, який адаптується за 10 хвилин.' }
+    ]},
+    { phase: 'Сайт і CV', label: 'Тиждень 9 — старт', tasks: [
+      { id: 't18', title: 'Перші 10 відгуків', flag: 'Критичний крок',
+        desc: 'Подаватись до того, як усе стане ідеальним. Перші відповіді — або їх відсутність — покажуть, що саме не працює: CV, портфоліо чи вибір вакансій. Три місяці полірування без жодного відгуку — найпоширеніший спосіб втратити квартал.',
+        result: '10 відгуків і перший фідбек від ринку.' },
+      { id: 't19', title: 'Короткий блок про другу криптоплатформу',
+        desc: 'Три-чотири абзаци і кілька екранів, без повного розбору. Два розгорнуті кейси на одну тему поспіль читаються як повтор і послаблюють обидва.',
+        result: 'короткий блок на сайті.' }
+    ]},
+    { phase: 'Пошук', label: 'Тижні 10–11 — обсяг', tasks: [
+      { id: 't20', title: '5–10 цільових відгуків щотижня',
+        desc: 'Цільових, а не масових: під кожен — змінений лист і найрелевантніший кейс першим. Веди просту таблицю: компанія, дата, канал, статус, відповідь. Без неї через місяць неможливо зрозуміти, що працює.',
+        result: '10–20 відгуків і таблиця для обліку.' },
+      { id: 't21', title: 'Нетворкінг: 5 контактів на тиждень',
+        desc: 'Дизайнери з компаній, які тобі цікаві, профільні спільноти, колишні замовники. Пишеш не «дайте роботу», а конкретне питання або показуєш кейс з проханням про фідбек. Значна частина позицій закривається через рекомендації ще до публікації вакансії.',
+        result: '20 нових контактів за два тижні.' },
+      { id: 't22', title: 'Оформити Dinneri як власний продукт',
+        desc: 'Стадію позначити чесно — незавершений проєкт часто показує процес краще за вилизаний. Власний продукт дає те, чого немає в замовних кейсах: продуктову гіпотезу, рішення про те, чого не робити, і відповідальність без замовника за спиною.',
+        result: 'третій кейс на сайті.' }
+    ]},
+    { phase: 'Пошук', label: 'Тиждень 12 — співбесіди', tasks: [
+      { id: 't23', title: 'Проговорити кожен кейс вголос за 5 хвилин',
+        desc: 'Запиши себе на диктофон і послухай. Структура та сама: задача, обмеження, рішення, результат. Написаний і розказаний кейс — різні жанри, і на співбесіді перевіряють другий: чи можеш ти захистити своє рішення в діалозі.',
+        result: 'три відрепетирувані п’ятихвилинні розповіді.' },
+      { id: 't24', title: 'Визначити позицію щодо тестових завдань',
+        desc: 'Вирішити заздалегідь: до скількох годин робиш безкоштовно, від якого обсягу просиш оплату, чого не робиш ніколи — наприклад, готового продакшн-екрана під виглядом тесту. Рішення, прийняте до першої пропозиції, а не під тиском.',
+        result: 'власне правило, записане в одному реченні.' }
+    ]},
+    { phase: 'Пошук', label: 'Тиждень 13 — аналіз', tasks: [
+      { id: 't25', title: 'Порахувати воронку і підсилити найслабшу ланку', flag: 'Критичний крок',
+        desc: 'Відгуки → відповіді → співбесіди → офери. Мало відповідей — проблема в CV або у виборі вакансій. Є співбесіди, немає оферів — у тому, як ти розповідаєш кейси. Провал видно одразу, і правити треба одну ланку, а не все підряд.',
+        result: 'діагноз і одна конкретна правка на наступний місяць.' }
+    ]}
+  ];
+
+  var PHASE_ORDER = [];
+  WEEKBLOCKS.forEach(function (b) { if (PHASE_ORDER.indexOf(b.phase) === -1) PHASE_ORDER.push(b.phase); });
+
+  var PHASE_SPANS = {};
+  (function () {
+    var counters = { 'Кейси': [1,5], 'Сайт і CV': [6,9], 'Пошук': [10,13] };
+    PHASE_ORDER.forEach(function (p) {
+      var r = counters[p];
+      PHASE_SPANS[p] = r ? ('тижні ' + r[0] + '–' + r[1]) : '';
+    });
+  })();
+
+  var ALL_TASKS = [];
+  WEEKBLOCKS.forEach(function (b) { b.tasks.forEach(function (t) { ALL_TASKS.push(t); }); });
+
+  var state = {};
+  function load() {
+    try {
+      var raw = localStorage.getItem(STATE_KEY);
+      state = raw ? JSON.parse(raw) : {};
+    } catch (e) { state = {}; }
+  }
+  function save() {
+    try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+  function getStatus(id) { return state[id] || 'queue'; }
+  function setStatus(id, s) { state[id] = s; save(); renderOverview(); }
+
+  function taskEl(t) {
+    var el = document.createElement('article');
+    el.className = 'task';
+    el.dataset.id = t.id;
+    el.dataset.status = getStatus(t.id);
+
+    var head = document.createElement('div');
+    head.className = 'task-head';
+
+    var sum = document.createElement('span');
+    sum.className = 'detail-btn-wrap';
+
+    var body = document.createElement('div');
+    if (t.flag) {
+      var f = document.createElement('span');
+      f.className = 'flag';
+      f.textContent = t.flag;
+      body.appendChild(f);
+    }
+    var title = document.createElement('div');
+    title.className = 'task-title';
+    title.textContent = t.title;
+    body.appendChild(title);
+    head.appendChild(body);
+
+    var detailBtn = document.createElement('span');
+    detailBtn.className = 'detail-btn';
+    detailBtn.textContent = 'Деталі';
+    sum.appendChild(detailBtn);
+    head.appendChild(sum);
+    el.appendChild(head);
+
+    var d = null, r = null;
+    if (t.desc) {
+      d = document.createElement('p');
+      d.className = 'task-desc';
+      d.textContent = t.desc;
+      el.appendChild(d);
+    }
+    if (t.result) {
+      r = document.createElement('p');
+      r.className = 'task-result';
+      r.hidden = true;
+      r.innerHTML = '<b>Результат:</b> ';
+      r.appendChild(document.createTextNode(t.result));
+      el.appendChild(r);
+    }
+    if (d || r) {
+      sum.addEventListener('click', function () {
+        var opening = r ? r.hidden : !d.classList.contains('is-expanded');
+        if (r) r.hidden = !opening;
+        if (d) d.classList.toggle('is-expanded', opening);
+        sum.classList.toggle('is-open', opening);
+      });
+    }
+
+    var seg = document.createElement('div');
+    seg.className = 'seg';
+    seg.setAttribute('role', 'group');
+    seg.setAttribute('aria-label', 'Статус: ' + t.title);
+    STATUSES.forEach(function (s) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.dataset.key = s.id;
+      btn.textContent = s.label;
+      btn.setAttribute('aria-pressed', String(getStatus(t.id) === s.id));
+      btn.addEventListener('click', function () {
+        el.dataset.status = s.id;
+        setStatus(t.id, s.id);
+        seg.querySelectorAll('button').forEach(function (b) {
+          b.setAttribute('aria-pressed', String(b.dataset.key === s.id));
+        });
+      });
+      seg.appendChild(btn);
+    });
+    el.appendChild(seg);
+
+    return el;
+  }
+
+  function renderBoard() {
+    var board = document.getElementById('board');
+    board.innerHTML = '';
+    var lastPhase = null;
+    WEEKBLOCKS.forEach(function (block) {
+      if (block.phase !== lastPhase) {
+        var head = document.createElement('div');
+        head.className = 'phase-head';
+        var name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = block.phase;
+        var span = document.createElement('span');
+        span.className = 'span';
+        span.textContent = PHASE_SPANS[block.phase] || '';
+        head.appendChild(name);
+        head.appendChild(span);
+        board.appendChild(head);
+        lastPhase = block.phase;
+      }
+      var wrap = document.createElement('div');
+      wrap.className = 'week-block';
+      var h2 = document.createElement('h2');
+      h2.textContent = block.label;
+      wrap.appendChild(h2);
+      var list = document.createElement('div');
+      list.className = 'task-list';
+      block.tasks.forEach(function (t) { list.appendChild(taskEl(t)); });
+      wrap.appendChild(list);
+      board.appendChild(wrap);
+    });
+  }
+
+  function renderOverview() {
+    var ov = document.getElementById('overview');
+    ov.innerHTML = '';
+    PHASE_ORDER.forEach(function (phase, i) {
+      var tasks = ALL_TASKS.filter(function (t) {
+        return WEEKBLOCKS.some(function (b) { return b.phase === phase && b.tasks.indexOf(t) !== -1; });
+      });
+      var done = tasks.filter(function (t) { return getStatus(t.id) === 'done'; }).length;
+      var card = document.createElement('div');
+      card.className = 'ov-card' + (done === tasks.length ? ' ov-complete' : '');
+      card.dataset.phase = String(i);
+      card.innerHTML =
+        '<div class="ov-name">' + phase + '</div>' +
+        '<div class="ov-progress"><span class="ov-count">' + done + '/' + tasks.length + '</span><span class="ov-check">✓</span></div>';
+      ov.appendChild(card);
+    });
+  }
+
+  load();
+  renderOverview();
+  renderBoard();
+
+  /* ---------- navigation between pages ---------- */
+  var pages = { plan: document.getElementById('plan'), apps: document.getElementById('apps'), skills: document.getElementById('skills') };
+  var navBtns = { plan: document.getElementById('navPlan'), apps: document.getElementById('navApps'), skills: document.getElementById('navSkills') };
+  function showPage(key) {
+    Object.keys(pages).forEach(function (k) {
+      pages[k].hidden = k !== key;
+      navBtns[k].setAttribute('aria-current', String(k === key));
+    });
+    pages[key].closest('.phone-screen').scrollTop = 0;
+  }
+  navBtns.plan.addEventListener('click', function () { showPage('plan'); });
+  navBtns.apps.addEventListener('click', function () { showPage('apps'); });
+  navBtns.skills.addEventListener('click', function () { showPage('skills'); });
+
+  /* ---------- applications (job-application tracker) ---------- */
+  var APPS_KEY = 'job-applications-v1';
+  var apps = [];
+  function loadApps() {
+    try {
+      var raw = localStorage.getItem(APPS_KEY);
+      apps = raw ? JSON.parse(raw) : [];
+    } catch (e) { apps = []; }
+  }
+  function saveApps() {
+    try { localStorage.setItem(APPS_KEY, JSON.stringify(apps)); } catch (e) {}
+  }
+
+  function shortLink(url) {
+    try {
+      var u = new URL(url);
+      return u.hostname.replace(/^www\./, '') + (u.pathname !== '/' ? u.pathname : '');
+    } catch (e) { return url; }
+  }
+
+  function appCardEl(a) {
+    var el = document.createElement('article');
+    el.className = 'app-card';
+    el.dataset.id = a.id;
+
+    var top = document.createElement('div');
+    top.className = 'app-top';
+    var name = document.createElement('div');
+    name.className = 'app-company';
+    name.textContent = a.company;
+    var del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'app-del';
+    del.setAttribute('aria-label', 'Видалити');
+    del.textContent = '×';
+    del.addEventListener('click', function () {
+      apps = apps.filter(function (x) { return x.id !== a.id; });
+      saveApps();
+      renderApps();
+    });
+    top.appendChild(name);
+    top.appendChild(del);
+    el.appendChild(top);
+
+    if (a.link) {
+      var link = document.createElement('a');
+      link.className = 'app-link';
+      link.href = a.link;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = '🔗 ' + shortLink(a.link);
+      el.appendChild(link);
+    }
+
+    if (a.desc) {
+      var d = document.createElement('p');
+      d.className = 'app-desc';
+      d.textContent = a.desc;
+      el.appendChild(d);
+    }
+
+    var seg = document.createElement('div');
+    seg.className = 'app-seg';
+    seg.setAttribute('role', 'group');
+    seg.setAttribute('aria-label', 'Статус: ' + a.company);
+    [{ id: 'waiting', label: 'Чекає відповіді' }, { id: 'replied', label: 'Відповіли' }].forEach(function (s) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.dataset.key = s.id;
+      btn.textContent = s.label;
+      btn.setAttribute('aria-pressed', String((a.status || 'waiting') === s.id));
+      btn.addEventListener('click', function () {
+        a.status = s.id;
+        saveApps();
+        seg.querySelectorAll('button').forEach(function (b) {
+          b.setAttribute('aria-pressed', String(b.dataset.key === s.id));
+        });
+        renderAppsStats();
+      });
+      seg.appendChild(btn);
+    });
+    el.appendChild(seg);
+
+    return el;
+  }
+
+  function renderAppsStats() {
+    var total = apps.length;
+    var replied = apps.filter(function (a) { return a.status === 'replied'; }).length;
+    var waiting = total - replied;
+    var stats = [
+      { num: total, label: 'Надіслано' },
+      { num: replied, label: 'Відповіли' },
+      { num: waiting, label: 'Чекають відповіді' }
+    ];
+    var wrap = document.getElementById('appsStats');
+    wrap.innerHTML = '';
+    stats.forEach(function (s) {
+      var card = document.createElement('div');
+      card.className = 'stat-card';
+      card.innerHTML = '<div class="stat-num">' + s.num + '</div><div class="stat-label">' + s.label + '</div>';
+      wrap.appendChild(card);
+    });
+  }
+
+  function renderApps() {
+    renderAppsStats();
+    var list = document.getElementById('appsList');
+    list.innerHTML = '';
+    apps.forEach(function (a) { list.appendChild(appCardEl(a)); });
+    document.getElementById('appsEmpty').hidden = apps.length > 0;
+  }
+
+  var appForm = document.getElementById('appForm');
+  document.getElementById('appAddBtn').addEventListener('click', function () {
+    appForm.hidden = false;
+    document.getElementById('appCompany').focus();
+  });
+  document.getElementById('appCancelBtn').addEventListener('click', function () {
+    appForm.reset();
+    appForm.hidden = true;
+  });
+  appForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var company = document.getElementById('appCompany').value.trim();
+    if (!company) return;
+    var link = document.getElementById('appLink').value.trim();
+    var desc = document.getElementById('appDesc').value.trim();
+    apps.push({ id: 'a' + Date.now(), company: company, link: link, desc: desc, status: 'waiting' });
+    saveApps();
+    appForm.reset();
+    appForm.hidden = true;
+    renderApps();
+  });
+
+  loadApps();
+  renderApps();
+
+  /* ---------- skills (based on frequency analysis of 7 vacancies) ---------- */
+  var SKILLS_KEY = 'job-skills-v1';
+  var SKILLS = [
+    { id: 's1', title: 'Figma як система, не полотно', freq: '6 з 7',
+      desc: 'Auto layout, component properties, variants, variables, team libraries. На співбесіді просять показати структуру файлу: чи компонент перевикористовується і не ламається при зміні контенту.' },
+    { id: 's2', title: 'Портфоліо з процесом', freq: '5 з 7',
+      desc: 'Для кожного кейсу — бізнес-задача, розглянуті альтернативи й чому відкинуті, результат. Перевіряють питанням "а чому не інакше" по конкретному екрану.' },
+    { id: 's3', title: 'Робота в чужій дизайн-системі', freq: '5 з 7',
+      desc: 'Розширення existing-системи без порушення її правил, а не створення з нуля. Типове питання — ситуація, коли компонент не покривав задачу.' },
+    { id: 's4', title: 'Mobile окремо від "адаптивності"', freq: '5 з 7',
+      desc: 'Конкретно iOS Human Interface Guidelines і Android Material: touch-target 44pt/48dp, жести, нативні патерни навігації (tab bar проти sidebar).' },
+    { id: 's5', title: 'User flows і дослідницьке мислення', freq: '5 з 7',
+      desc: 'Уміння побудувати шлях користувача до екранів, а не навпаки. Перевіряють проханням намалювати flow для незнайомого сценарію.' },
+    { id: 's6', title: 'Аргументація рішень перед бізнесом', freq: '4 з 7',
+      desc: 'Структура: контекст → варіанти → чому цей → трейдофф → що зробила б інакше. Перевіряють витримку при незгоді співрозмовника.' },
+    { id: 's7', title: 'iOS/Android guideline-нюанси', freq: '3 з 7',
+      desc: 'Safe area, gesture navigation, platform-specific компоненти. Часто перевіряють усно, без макета.' },
+    { id: 's8', title: 'Стани інтерфейсу як системна робота', freq: '2 з 7 · діра', flag: 'Найбільша діра',
+      desc: 'Loading, empty, error, validation, disabled, conflict — задокументовані для всього компонента, а не для одного екрана. Жоден готовий кейс поки цього явно не показує.' },
+    { id: 's9', title: 'Складні дані: таблиці, календарі, фільтри', freq: '2 з 7 · діра', flag: 'Найбільша діра',
+      desc: 'Проєктування календарів записів, таблиць клієнтів, фільтрів і форм на малому екрані — переструктурування, а не стиснення desktop-сітки.' }
+  ];
+
+  var skillState = {};
+  function loadSkills() {
+    try {
+      var raw = localStorage.getItem(SKILLS_KEY);
+      skillState = raw ? JSON.parse(raw) : {};
+    } catch (e) { skillState = {}; }
+  }
+  function saveSkills() {
+    try { localStorage.setItem(SKILLS_KEY, JSON.stringify(skillState)); } catch (e) {}
+  }
+  function getSkillStatus(id) { return skillState[id] || 'queue'; }
+
+  function skillCardEl(s) {
+    var el = document.createElement('article');
+    el.className = 'skill-card';
+
+    var top = document.createElement('div');
+    top.className = 'skill-top';
+    var body = document.createElement('div');
+    if (s.flag) {
+      var f = document.createElement('span');
+      f.className = 'flag';
+      f.textContent = s.flag;
+      body.appendChild(f);
+    }
+    var title = document.createElement('div');
+    title.className = 'skill-title';
+    title.textContent = s.title;
+    body.appendChild(title);
+    top.appendChild(body);
+    var freq = document.createElement('span');
+    freq.className = 'skill-freq';
+    freq.textContent = s.freq;
+    top.appendChild(freq);
+    el.appendChild(top);
+
+    var desc = document.createElement('p');
+    desc.className = 'skill-desc';
+    desc.textContent = s.desc;
+    el.appendChild(desc);
+
+    var seg = document.createElement('div');
+    seg.className = 'skill-seg';
+    seg.setAttribute('role', 'group');
+    seg.setAttribute('aria-label', 'Рівень впевненості: ' + s.title);
+    [{ id: 'queue', label: 'Не впевнена' }, { id: 'doing', label: 'Розвиваю' }, { id: 'done', label: 'Впевнена' }].forEach(function (opt) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.dataset.key = opt.id;
+      btn.textContent = opt.label;
+      btn.setAttribute('aria-pressed', String(getSkillStatus(s.id) === opt.id));
+      btn.addEventListener('click', function () {
+        skillState[s.id] = opt.id;
+        saveSkills();
+        seg.querySelectorAll('button').forEach(function (b) {
+          b.setAttribute('aria-pressed', String(b.dataset.key === opt.id));
+        });
+      });
+      seg.appendChild(btn);
+    });
+    el.appendChild(seg);
+
+    return el;
+  }
+
+  function renderSkills() {
+    var list = document.getElementById('skillsList');
+    list.innerHTML = '';
+    SKILLS.forEach(function (s) { list.appendChild(skillCardEl(s)); });
+  }
+
+  loadSkills();
+  renderSkills();
+})();
+</script>
