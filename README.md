@@ -51,7 +51,7 @@ python3 -m http.server 8000
 
 ## Технічний стек
 
-Ванільний HTML/CSS/JavaScript, без фреймворків і збірки. Тема — примусово темна (CSS custom properties в `:root`). Дизайн-система: soft-gradient fintech UI (великі радіуси, скляні (glassmorphism) картки з backdrop-filter, лаймовий акцент для завершених станів).
+Ванільний HTML/CSS/JavaScript, без фреймворків і збірки. Тема — примусово темна (CSS custom properties в `:root`). Дизайн-система: midnight navy analytics UI — глибокий navy фон, картки з градієнтною заливкою (світліше зверху-зліва) і градієнтним hairline-бордером замість тіней, mint-градієнт для завершених станів, amber-чіпи для критичних позначок, синій CTA для основної дії.
 
 ## Історія
 
