@@ -98,14 +98,19 @@
   /* ---------- header ---------- */
   .app-page .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 10px; }
   .app-page .icon-btn {
+    position: relative;
     width: 36px; height: 36px; border-radius: 999px; background: var(--tile-btn);
     border: none; display: flex; align-items: center; justify-content: center;
     font-size: 15px; cursor: pointer; color: var(--ink); flex: 0 0 auto;
   }
-  .app-page .head-titles { text-align: center; flex: 1; }
+  .app-page .notify-dot {
+    position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--urgent); border: 2px solid var(--bg);
+  }
+  .app-page .notify-dot[hidden] { display: none; }
+  .app-page .head-titles { text-align: left; flex: 1; }
   .app-page .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
   .app-page .head-titles h1 { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
-  .app-page .spacer { width: 36px; flex: 0 0 auto; }
 
   /* ---------- phase overview ---------- */
   .app-page .overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 22px; }
@@ -372,12 +377,17 @@
 <div id="plan" class="app-page">
   <div class="wrap">
     <div class="topbar">
-      <span class="spacer" aria-hidden="true"></span>
       <div class="head-titles">
         <p class="eyebrow">13 тижнів · продуктовий UI/UX</p>
         <h1>План виходу на ринок праці</h1>
       </div>
-      <span class="spacer" aria-hidden="true"></span>
+      <button type="button" class="icon-btn notify-btn" aria-label="Термінові сповіщення">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" focusable="false">
+          <path d="M15.5 18C15.5 19.933 13.933 21.5 12 21.5C10.067 21.5 8.5 19.933 8.5 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19.2311 18H4.76887C3.79195 18 3 17.208 3 16.2311C3 15.762 3.18636 15.3121 3.51809 14.9803L4.12132 14.3771C4.68393 13.8145 5 13.0514 5 12.2558V9.5C5 5.63401 8.13401 2.5 12 2.5C15.866 2.5 19 5.634 19 9.5V12.2558C19 13.0514 19.3161 13.8145 19.8787 14.3771L20.4819 14.9803C20.8136 15.3121 21 15.762 21 16.2311C21 17.208 20.208 18 19.2311 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="notify-dot" hidden></span>
+      </button>
     </div>
 
     <div class="overview" id="overview"></div>
@@ -393,12 +403,17 @@
 <div id="apps" class="app-page" hidden>
   <div class="wrap">
     <div class="topbar">
-      <span class="spacer" aria-hidden="true"></span>
       <div class="head-titles">
         <p class="eyebrow">Пошук на повну</p>
         <h1>Відгуки на вакансії</h1>
       </div>
-      <span class="spacer" aria-hidden="true"></span>
+      <button type="button" class="icon-btn notify-btn" aria-label="Термінові сповіщення">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" focusable="false">
+          <path d="M15.5 18C15.5 19.933 13.933 21.5 12 21.5C10.067 21.5 8.5 19.933 8.5 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19.2311 18H4.76887C3.79195 18 3 17.208 3 16.2311C3 15.762 3.18636 15.3121 3.51809 14.9803L4.12132 14.3771C4.68393 13.8145 5 13.0514 5 12.2558V9.5C5 5.63401 8.13401 2.5 12 2.5C15.866 2.5 19 5.634 19 9.5V12.2558C19 13.0514 19.3161 13.8145 19.8787 14.3771L20.4819 14.9803C20.8136 15.3121 21 15.762 21 16.2311C21 17.208 20.208 18 19.2311 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="notify-dot" hidden></span>
+      </button>
     </div>
 
     <div class="funnel" id="appsFunnel"></div>
@@ -435,12 +450,17 @@
 <div id="skills" class="app-page" hidden>
   <div class="wrap">
     <div class="topbar">
-      <span class="spacer" aria-hidden="true"></span>
       <div class="head-titles">
         <p class="eyebrow">На основі 7 вакансій</p>
         <h1>Навички і скіли</h1>
       </div>
-      <span class="spacer" aria-hidden="true"></span>
+      <button type="button" class="icon-btn notify-btn" aria-label="Термінові сповіщення">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" focusable="false">
+          <path d="M15.5 18C15.5 19.933 13.933 21.5 12 21.5C10.067 21.5 8.5 19.933 8.5 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19.2311 18H4.76887C3.79195 18 3 17.208 3 16.2311C3 15.762 3.18636 15.3121 3.51809 14.9803L4.12132 14.3771C4.68393 13.8145 5 13.0514 5 12.2558V9.5C5 5.63401 8.13401 2.5 12 2.5C15.866 2.5 19 5.634 19 9.5V12.2558C19 13.0514 19.3161 13.8145 19.8787 14.3771L20.4819 14.9803C20.8136 15.3121 21 15.762 21 16.2311C21 17.208 20.208 18 19.2311 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="notify-dot" hidden></span>
+      </button>
     </div>
 
     <div class="track-note">
@@ -507,6 +527,7 @@
   }
   function saveDeadlines() {
     try { localStorage.setItem(DEADLINES_KEY, JSON.stringify(deadlines)); } catch (e) {}
+    updateNotifyDot();
   }
 
   function deadlineInfo(dateStr) {
@@ -520,6 +541,23 @@
     else if (diffDays === 1) text = 'Завтра';
     else text = 'Через ' + diffDays + ' дн.';
     return { urgent: diffDays <= 2, text: text };
+  }
+
+  function updateNotifyDot() {
+    var hasUrgent = false;
+    Object.keys(deadlines).forEach(function (taskId) {
+      if (hasUrgent || getStatus(taskId) === 'done') return;
+      var info = deadlineInfo(deadlines[taskId]);
+      if (info && info.urgent) hasUrgent = true;
+    });
+    if (!hasUrgent) {
+      apps.forEach(function (a) {
+        if (hasUrgent) return;
+        var info = deadlineInfo(a.deadline);
+        if (info && info.urgent) hasUrgent = true;
+      });
+    }
+    document.querySelectorAll('.notify-dot').forEach(function (dot) { dot.hidden = !hasUrgent; });
   }
 
   // Weeks 10 and 11 combine into a single displayed block (shared tasks).
@@ -654,7 +692,7 @@
     try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch (e) {}
   }
   function getStatus(id) { return state[id] || 'queue'; }
-  function setStatus(id, s) { state[id] = s; save(); renderOverview(); }
+  function setStatus(id, s) { state[id] = s; save(); renderOverview(); updateNotifyDot(); }
 
   function taskEl(t) {
     var el = document.createElement('article');
@@ -876,6 +914,7 @@
   }
   function saveApps() {
     try { localStorage.setItem(APPS_KEY, JSON.stringify(apps)); } catch (e) {}
+    updateNotifyDot();
   }
 
   function shortLink(url) {
@@ -1191,6 +1230,8 @@
 
   loadSkills();
   renderSkills();
+
+  updateNotifyDot();
 
   /* Test hook: exposes pure logic for tests/index.html. No effect on app behavior. */
   window.__jobAppTest = { deadlineInfo: deadlineInfo, STAGES: STAGES, stageIndex: stageIndex };

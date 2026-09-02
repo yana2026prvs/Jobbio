@@ -204,6 +204,21 @@
         record('План: та сама задача знову "горить" після повернення в чергу', true);
       } catch (e) { record('План: та сама задача знову "горить" після повернення в чергу', false, e.message); }
 
+      // ---- notify bell badge ----
+      try {
+        var dots = d.querySelectorAll('.notify-dot');
+        assert(dots.length === 3, 'дзвіночків=' + dots.length);
+        assert(Array.from(dots).every(function (el) { return el.hidden === false; }), 'бейдж не показався при терміновій задачі');
+        record('Дзвіночок: бейдж показується, коли є термінова задача', true);
+      } catch (e) { record('Дзвіночок: бейдж показується, коли є термінова задача', false, e.message); }
+
+      try {
+        t1.querySelector('.seg button[data-key="done"]').click();
+        var dots = d.querySelectorAll('.notify-dot');
+        assert(Array.from(dots).every(function (el) { return el.hidden === true; }), 'бейдж лишився видимим після "Готово"');
+        record('Дзвіночок: бейдж ховається, коли термінову задачу позначено "Готово"', true);
+      } catch (e) { record('Дзвіночок: бейдж ховається, коли термінову задачу позначено "Готово"', false, e.message); }
+
       // ---- skills page DOM ----
       try {
         var skillCount = d.querySelectorAll('.skill-card').length;
@@ -238,6 +253,12 @@
         assert(label.textContent.indexOf('Прострочено') !== -1, 'текст="' + label.textContent + '"');
         record('Відгуки: прострочений дедлайн підсвічується на картці', true);
       } catch (e) { record('Відгуки: прострочений дедлайн підсвічується на картці', false, e.message); }
+
+      try {
+        var dots = d.querySelectorAll('.notify-dot');
+        assert(Array.from(dots).every(function (el) { return el.hidden === false; }), 'бейдж не показався при простроченому відгуку');
+        record('Дзвіночок: бейдж показується і через прострочений відгук', true);
+      } catch (e) { record('Дзвіночок: бейдж показується і через прострочений відгук', false, e.message); }
 
       try {
         appCard.querySelector('.app-seg button[data-key="interview"]').click();
@@ -292,6 +313,12 @@
         assert(counts.every(function (c) { return c === '0'; }), JSON.stringify(counts));
         record('Відгуки: видалення відгуків очищує список і воронку', true);
       } catch (e) { record('Відгуки: видалення відгуків очищує список і воронку', false, e.message); }
+
+      try {
+        var dots = d.querySelectorAll('.notify-dot');
+        assert(Array.from(dots).every(function (el) { return el.hidden === true; }), 'бейдж лишився видимим після видалення простроченого відгуку');
+        record('Дзвіночок: бейдж ховається після видалення простроченого відгуку', true);
+      } catch (e) { record('Дзвіночок: бейдж ховається після видалення простроченого відгуку', false, e.message); }
 
       // ---- migration of legacy data (old "status" field -> "stage") ----
       clearAppStorage();
