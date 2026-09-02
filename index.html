@@ -119,11 +119,12 @@
     color: var(--ink); display: flex; flex-direction: column; align-items: flex-start; text-align: left;
     justify-content: space-between; gap: 12px; min-height: 84px;
     border: 1px solid transparent;
+    box-shadow: inset 0 0 22px rgba(80,140,255,.20), inset 0 1px 0 rgba(255,255,255,.05);
     backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
   }
-  .app-page .ov-card[data-phase="0"] { background: linear-gradient(160deg, rgba(159,239,196,.38), rgba(30,143,110,.38)) padding-box, linear-gradient(150deg, rgba(150,175,255,.26), rgba(150,175,255,.04)) border-box; }
-  .app-page .ov-card[data-phase="1"] { background: linear-gradient(160deg, rgba(240,210,140,.38), rgba(185,121,30,.38)) padding-box, linear-gradient(150deg, rgba(150,175,255,.26), rgba(150,175,255,.04)) border-box; }
-  .app-page .ov-card[data-phase="2"] { background: linear-gradient(160deg, rgba(201,190,242,.38), rgba(107,63,160,.38)) padding-box, linear-gradient(150deg, rgba(150,175,255,.26), rgba(150,175,255,.04)) border-box; }
+  .app-page .ov-card[data-phase="0"] { background: linear-gradient(160deg, rgba(159,239,196,.26), rgba(30,143,110,.26)) padding-box, linear-gradient(150deg, rgba(150,175,255,.26), rgba(150,175,255,.04)) border-box; }
+  .app-page .ov-card[data-phase="1"] { background: linear-gradient(160deg, rgba(240,210,140,.26), rgba(185,121,30,.26)) padding-box, linear-gradient(150deg, rgba(150,175,255,.26), rgba(150,175,255,.04)) border-box; }
+  .app-page .ov-card[data-phase="2"] { background: linear-gradient(160deg, rgba(201,190,242,.26), rgba(107,63,160,.26)) padding-box, linear-gradient(150deg, rgba(150,175,255,.26), rgba(150,175,255,.04)) border-box; }
   .app-page .ov-name { font-size: 15px; font-weight: 500; line-height: 1.25; position: relative; text-align: left; }
   .app-page .ov-progress { display: flex; align-items: center; gap: 6px; position: relative; }
   .app-page .ov-count { font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
