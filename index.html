@@ -230,9 +230,9 @@
   :root:not([data-theme="light"]) .bottom-nav .bn-pill { background: rgba(12,20,36,.78); }
   :root[data-theme="dark"] .bottom-nav .bn-pill { background: rgba(12,20,36,.78); }
   .bottom-nav button {
-    display: flex; align-items: center; gap: 6px; border: none; cursor: pointer;
-    font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted);
-    background: transparent; padding: 10px 16px; border-radius: 999px; white-space: nowrap;
+    display: flex; align-items: center; gap: 5px; border: none; cursor: pointer;
+    font-family: inherit; font-size: 12px; font-weight: 600; color: var(--muted);
+    background: transparent; padding: 10px 12px; border-radius: 999px; white-space: nowrap;
   }
   .bottom-nav button[aria-current="true"] { background: var(--ink); color: var(--bg); }
   .bottom-nav button .bn-ic { width: 18px; height: 18px; flex: 0 0 auto; display: block; }
@@ -370,6 +370,24 @@
   .skill-card .skill-seg button[data-key="queue"][aria-pressed="true"],
   .skill-card .skill-seg button[data-key="doing"][aria-pressed="true"] { background: var(--ink); color: var(--bg); }
   .skill-card .skill-seg button[data-key="done"][aria-pressed="true"] { background: var(--lime); color: var(--lime-ink); }
+
+  /* ---------- profile page ---------- */
+  .profile-card {
+    background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 22px;
+    padding: 16px; display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px;
+  }
+  .profile-avatar {
+    width: 56px; height: 56px; border-radius: 50%; background: var(--lime); color: var(--lime-ink);
+    display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800;
+  }
+  .profile-form { display: flex; flex-direction: column; gap: 12px; }
+  .profile-form .add-field { display: flex; flex-direction: column; gap: 4px; }
+  .profile-form .add-field label { font-size: 11px; color: var(--muted); }
+  .profile-form input, .profile-form textarea {
+    font-family: inherit; font-size: 13px; color: var(--ink); background: var(--tile);
+    border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; width: 100%; resize: vertical;
+  }
+  .profile-form textarea { min-height: 90px; }
 </style>
 <div class="device-stage">
 <div class="phone-shell">
@@ -477,6 +495,50 @@
     </div>
   </div>
 </div>
+
+<div id="profile" class="app-page" hidden>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="head-titles">
+        <p class="eyebrow">Особистий кабінет</p>
+        <h1>Профіль</h1>
+      </div>
+      <button type="button" class="icon-btn notify-btn" aria-label="Термінові сповіщення">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" focusable="false">
+          <path d="M15.5 18C15.5 19.933 13.933 21.5 12 21.5C10.067 21.5 8.5 19.933 8.5 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19.2311 18H4.76887C3.79195 18 3 17.208 3 16.2311C3 15.762 3.18636 15.3121 3.51809 14.9803L4.12132 14.3771C4.68393 13.8145 5 13.0514 5 12.2558V9.5C5 5.63401 8.13401 2.5 12 2.5C15.866 2.5 19 5.634 19 9.5V12.2558C19 13.0514 19.3161 13.8145 19.8787 14.3771L20.4819 14.9803C20.8136 15.3121 21 15.762 21 16.2311C21 17.208 20.208 18 19.2311 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="notify-dot" hidden></span>
+      </button>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-avatar" id="profileAvatar" aria-hidden="true">?</div>
+      <form class="profile-form" id="profileForm">
+        <div class="add-field">
+          <label for="profileName">Ім'я</label>
+          <input type="text" id="profileName" placeholder="Наприклад, Яна Смірнова" autocomplete="name">
+        </div>
+        <div class="add-field">
+          <label for="profileEmail">Пошта</label>
+          <input type="email" id="profileEmail" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="add-field">
+          <label for="profileRole">Професія</label>
+          <input type="text" id="profileRole" placeholder="Наприклад, UI/UX дизайнерка" autocomplete="organization-title">
+        </div>
+        <div class="add-field">
+          <label for="profileBio">Короткий опис досвіду</label>
+          <textarea id="profileBio" placeholder="2-3 речення про досвід і фокус"></textarea>
+        </div>
+      </form>
+    </div>
+
+    <div class="foot">
+      <span>Дані зберігаються автоматично в цьому браузері</span>
+    </div>
+  </div>
+</div>
 </div>
 
 <div class="bottom-nav">
@@ -502,6 +564,13 @@
         <path d="M19.5 4.5L12 12M19.5 4.5V2M19.5 4.5H22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
       Навички
+    </button>
+    <button type="button" id="navProfile" aria-current="false">
+      <svg class="bn-ic" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <path d="M12 12C14.4853 12 16.5 9.98528 16.5 7.5C16.5 5.01472 14.4853 3 12 3C9.51472 3 7.5 5.01472 7.5 7.5C7.5 9.98528 9.51472 12 12 12Z" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M20 20.5C20 16.634 16.4183 13.5 12 13.5C7.58172 13.5 4 16.634 4 20.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      Профіль
     </button>
   </div>
 </div>
@@ -877,8 +946,8 @@
   renderBoard();
 
   /* ---------- navigation between pages ---------- */
-  var pages = { plan: document.getElementById('plan'), apps: document.getElementById('apps'), skills: document.getElementById('skills') };
-  var navBtns = { plan: document.getElementById('navPlan'), apps: document.getElementById('navApps'), skills: document.getElementById('navSkills') };
+  var pages = { plan: document.getElementById('plan'), apps: document.getElementById('apps'), skills: document.getElementById('skills'), profile: document.getElementById('profile') };
+  var navBtns = { plan: document.getElementById('navPlan'), apps: document.getElementById('navApps'), skills: document.getElementById('navSkills'), profile: document.getElementById('navProfile') };
   function showPage(key) {
     Object.keys(pages).forEach(function (k) {
       pages[k].hidden = k !== key;
@@ -889,6 +958,7 @@
   navBtns.plan.addEventListener('click', function () { showPage('plan'); });
   navBtns.apps.addEventListener('click', function () { showPage('apps'); });
   navBtns.skills.addEventListener('click', function () { showPage('skills'); });
+  navBtns.profile.addEventListener('click', function () { showPage('profile'); });
 
   /* ---------- applications (job-application tracker) ---------- */
   var APPS_KEY = 'job-applications-v1';
@@ -1231,6 +1301,45 @@
 
   loadSkills();
   renderSkills();
+
+  /* ---------- personal profile (особистий кабінет) ---------- */
+  var PROFILE_KEY = 'job-profile-v1';
+  var PROFILE_DEFAULTS = { name: '', email: '', role: '', bio: '' };
+  var profile = PROFILE_DEFAULTS;
+  function loadProfile() {
+    try {
+      var raw = localStorage.getItem(PROFILE_KEY);
+      profile = raw ? Object.assign({}, PROFILE_DEFAULTS, JSON.parse(raw)) : Object.assign({}, PROFILE_DEFAULTS);
+    } catch (e) { profile = Object.assign({}, PROFILE_DEFAULTS); }
+  }
+  function saveProfile() {
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch (e) {}
+  }
+
+  var profileFields = {
+    name: document.getElementById('profileName'),
+    email: document.getElementById('profileEmail'),
+    role: document.getElementById('profileRole'),
+    bio: document.getElementById('profileBio')
+  };
+  var profileAvatar = document.getElementById('profileAvatar');
+  function renderProfile() {
+    Object.keys(profileFields).forEach(function (key) {
+      profileFields[key].value = profile[key] || '';
+    });
+    profileAvatar.textContent = profile.name.trim().charAt(0).toUpperCase() || '?';
+  }
+  Object.keys(profileFields).forEach(function (key) {
+    profileFields[key].addEventListener('input', function () {
+      profile[key] = profileFields[key].value;
+      saveProfile();
+      if (key === 'name') profileAvatar.textContent = profile.name.trim().charAt(0).toUpperCase() || '?';
+    });
+  });
+  document.getElementById('profileForm').addEventListener('submit', function (e) { e.preventDefault(); });
+
+  loadProfile();
+  renderProfile();
 
   updateNotifyDot();
 

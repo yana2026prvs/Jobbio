@@ -207,7 +207,7 @@
       // ---- notify bell badge ----
       try {
         var dots = d.querySelectorAll('.notify-dot');
-        assert(dots.length === 3, 'дзвіночків=' + dots.length);
+        assert(dots.length === 4, 'дзвіночків=' + dots.length);
         assert(Array.from(dots).every(function (el) { return el.hidden === false; }), 'бейдж не показався при терміновій задачі');
         record('Дзвіночок: бейдж показується, коли є термінова задача', true);
       } catch (e) { record('Дзвіночок: бейдж показується, коли є термінова задача', false, e.message); }
