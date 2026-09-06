@@ -320,6 +320,19 @@
         record('Дзвіночок: бейдж ховається після видалення простроченого відгуку', true);
       } catch (e) { record('Дзвіночок: бейдж ховається після видалення простроченого відгуку', false, e.message); }
 
+      // ---- sourceFromUrl ----
+      try {
+        assert(T.sourceFromUrl('https://djinni.co/jobs/123') === 'djinni', 'djinni');
+        assert(T.sourceFromUrl('https://www.linkedin.com/jobs/view/123') === 'linkedin', 'linkedin');
+        assert(T.sourceFromUrl('https://jobs.linkedin.com/foo') === 'linkedin', 'linkedin subdomain');
+        assert(T.sourceFromUrl('https://dou.ua/jobs/1') === 'dou', 'dou');
+        assert(T.sourceFromUrl('https://work.ua/jobs/1') === 'work', 'work.ua');
+        assert(T.sourceFromUrl('https://example.com/job') === 'manual', 'unknown -> manual');
+        assert(T.sourceFromUrl('') === 'manual', 'empty -> manual');
+        assert(T.sourceFromUrl(null) === 'manual', 'null -> manual');
+        record('sourceFromUrl: розпізнає djinni/linkedin/dou/work і повертає manual для решти', true);
+      } catch (e) { record('sourceFromUrl: розпізнає djinni/linkedin/dou/work і повертає manual для решти', false, e.message); }
+
       // ---- migration of legacy data (old "status" field -> "stage") ----
       clearAppStorage();
       localStorage.setItem('job-applications-v1', JSON.stringify([
