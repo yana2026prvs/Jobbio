@@ -4,7 +4,7 @@
     {
       "name": "jobbio",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8000"],
+      "runtimeArgs": ["/Users/anaprideus/Documents/Claude/Jobbio/serve.py"],
       "port": 8000
     }
   ]

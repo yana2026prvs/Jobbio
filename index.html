@@ -3,43 +3,39 @@
 <title>План виходу на ринок праці</title>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#070B14">
+<meta name="theme-color" content="#F5F6F7">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Трекер">
 <meta name="mobile-web-app-capable" content="yes">
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap');
 
   :root {
-    color-scheme: dark;
-    --bg: #070B14;
-    --surface: #0C1424;
-    --surface-light: #14203C;
-    --surface-glow: #1B2C55;
-    --card-surface-bg:
-      radial-gradient(120% 90% at 8% 0%, var(--surface-glow) 0%, transparent 60%) padding-box,
-      linear-gradient(160deg, var(--surface-light) 0%, var(--surface) 55%, var(--bg) 100%) padding-box,
-      linear-gradient(150deg, rgba(150,175,255,.26) 0%, rgba(150,175,255,.09) 40%, rgba(150,175,255,.03) 100%) border-box;
-    --tile: rgba(255,255,255,.06);
-    --tile-btn: rgba(255,255,255,.08);
-    --seg-idle: rgba(255,255,255,.06);
-    --ink: #FFFFFF;
-    --muted: #9AA8C4;
-    --muted-soft: #7C87A0;
-    --strike: #5B6478;
-    --border: rgba(150,175,255,.12);
-    --lime: linear-gradient(135deg, #6FF0B0 0%, #12C98A 100%);
-    --lime-ink: #06241A;
-    --amber: #E1AC41;
-    --amber-bg: rgba(225,172,65,.16);
-    --action-blue: #2C71FF;
-    --action-blue-deep: #1652D8;
-    --urgent: #FF6F5B;
-    --urgent-bg: rgba(255,111,91,.16);
+    color-scheme: light;
+    --bg: #F5F6F7;
+    --surface: #FFFFFF;
+    --card-surface-bg: #FFFFFF;
+    --card-shadow: 0 2px 20px rgba(20,30,50,.05);
+    --tile: rgba(0,0,0,.045);
+    --tile-btn: rgba(255,255,255,.6);
+    --seg-idle: rgba(255,255,255,.6);
+    --ink: #282828;
+    --muted: #7F7F7F;
+    --muted-soft: #A7A5A5;
+    --strike: #A7A5A5;
+    --border: rgba(0,0,0,.07);
+    --lime: linear-gradient(135deg, #21A6EE 0%, #2EC6E8 100%);
+    --lime-ink: #FFFFFF;
+    --amber: #B9791E;
+    --amber-bg: rgba(185,121,30,.12);
+    --action-blue: #21A6EE;
+    --action-blue-deep: #052B5A;
+    --urgent: #E0503F;
+    --urgent-bg: rgba(224,80,63,.12);
     --grad-1a: #9FEFC4; --grad-1b: #1E8F6E;
     --grad-2a: #F0D28C; --grad-2b: #B9791E;
     --grad-3a: #C9BEF2; --grad-3b: #6B3FA0;
@@ -51,7 +47,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--stage); }
   body {
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Urbanist', system-ui, sans-serif;
     color: var(--ink);
     background: var(--stage);
     min-height: 100vh;
@@ -112,6 +108,7 @@
     width: 36px; height: 36px; border-radius: 999px; background: var(--tile-btn);
     border: none; display: flex; align-items: center; justify-content: center;
     font-size: 15px; cursor: pointer; color: var(--ink); flex: 0 0 auto;
+    box-shadow: 0 1px 2px rgba(20,30,50,.06);
   }
   .app-page .notify-dot {
     position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%;
@@ -123,19 +120,23 @@
   .app-page .head-titles h1 { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
 
   /* ---------- phase overview ---------- */
-  .app-page .overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 22px; }
+  .app-page .overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 8px; margin-bottom: 22px; }
   .app-page .ov-card {
-    position: relative; overflow: hidden; border-radius: 20px; padding: 14px 12px;
+    position: relative; overflow: hidden; border-radius: 24px; padding: 14px 12px;
     color: var(--ink); display: flex; flex-direction: column; align-items: flex-start; text-align: left;
-    justify-content: space-between; gap: 12px; min-height: 84px;
-    border: 1px solid transparent;
-    box-shadow: inset 0 0 22px rgba(80,140,255,.20), inset 0 1px 0 rgba(255,255,255,.05);
+    justify-content: space-between; gap: 12px; min-height: 84px; min-width: 0;
+    border: 1px solid var(--border);
+    box-shadow: var(--card-shadow);
     backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
   }
-  .app-page .ov-card[data-phase="0"],
-  .app-page .ov-card[data-phase="1"],
-  .app-page .ov-card[data-phase="2"] { background: linear-gradient(160deg, rgba(61,99,196,.34), rgba(11,24,54,.34)) padding-box, linear-gradient(150deg, rgba(150,175,255,.26), rgba(150,175,255,.04)) border-box; }
-  .app-page .ov-name { font-size: 15px; font-weight: 500; line-height: 1.25; position: relative; text-align: left; }
+  .app-page .ov-card { background: rgba(255,255,255,.55); }
+  .app-page .ov-card.ov-complete { background: var(--lime); color: #FFFFFF; border-color: transparent; }
+  .app-page .ov-card.ov-complete .ov-check { background: #FFFFFF; color: var(--action-blue-deep); }
+  .app-page .ov-name {
+    font-size: 15px; font-weight: 500; line-height: 1.25; position: relative; text-align: left;
+    width: 100%; overflow-wrap: break-word; word-break: break-word;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  }
   .app-page .ov-progress { display: flex; align-items: center; gap: 6px; position: relative; }
   .app-page .ov-count { font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
   .app-page .ov-check {
@@ -156,8 +157,9 @@
   /* ---------- task cards ---------- */
   .app-page .task-list { display: flex; flex-direction: column; gap: 8px; }
   .app-page .task {
-    background: var(--card-surface-bg); border-radius: 24px; padding: 15px 15px 13px;
+    background: var(--card-surface-bg); border-radius: 28px; padding: 15px 15px 13px;
     display: flex; flex-direction: column; gap: 12px; border: 1px solid transparent;
+    box-shadow: var(--card-shadow);
   }
   .app-page .task-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
   .app-page .flag {
@@ -174,10 +176,23 @@
   .app-page .detail-btn::after { content: '›'; font-size: 15px; transition: transform .15s ease; }
   .app-page .detail-btn-wrap.is-open .detail-btn::after { transform: rotate(90deg); }
   .app-page .task-desc {
-    font-size: 12px; color: var(--muted); line-height: 1.5;
+    font-size: 12px; color: var(--muted); line-height: 1.5; white-space: pre-line;
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
   }
   .app-page .task-desc.is-expanded { -webkit-line-clamp: unset; overflow: visible; }
+  .app-page .task-checklist { list-style: none; display: flex; flex-direction: column; gap: 7px; margin-top: 2px; }
+  .app-page .task-checklist[hidden] { display: none; }
+  .app-page .tc-item { display: flex; align-items: flex-start; gap: 8px; }
+  .app-page .tc-box {
+    flex: 0 0 auto; width: 16px; height: 16px; margin-top: 2px; border-radius: 5px;
+    border: 1.5px solid var(--border); background: var(--tile); cursor: pointer; padding: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; line-height: 1;
+    color: transparent;
+  }
+  .app-page .tc-item[data-checked="true"] .tc-box { background: var(--lime); border-color: transparent; color: var(--lime-ink); }
+  .app-page .tc-box::after { content: '✓'; }
+  .app-page .tc-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .app-page .tc-item[data-checked="true"] .tc-text { color: var(--strike); text-decoration: line-through; }
   .app-page .task-result { font-size: 11.5px; color: var(--muted); margin-top: 8px; }
   .app-page .task-result b { color: var(--ink); font-weight: 700; }
 
@@ -195,7 +210,7 @@
   }
   .app-page .task-deadline-edit input[type="date"] {
     font-family: inherit; font-size: 12px; color: var(--ink); background: var(--tile);
-    border: 1px solid var(--border); border-radius: 10px; padding: 6px 8px; color-scheme: dark;
+    border: 1px solid var(--border); border-radius: 10px; padding: 6px 8px; color-scheme: light;
   }
   .app-page .task-deadline-edit .tde-clear {
     font-family: inherit; font-size: 11px; font-weight: 600; color: var(--muted);
@@ -237,8 +252,6 @@
     background: rgba(255,255,255,.6); backdrop-filter: blur(16px);
     border-radius: 999px; padding: 6px; box-shadow: 0 8px 24px -8px rgba(0,0,0,.18);
   }
-  :root:not([data-theme="light"]) .bottom-nav .bn-pill { background: rgba(12,20,36,.78); }
-  :root[data-theme="dark"] .bottom-nav .bn-pill { background: rgba(12,20,36,.78); }
   .bottom-nav button {
     display: flex; align-items: center; gap: 5px; border: none; cursor: pointer;
     font-family: inherit; font-size: 12px; font-weight: 600; color: var(--muted);
@@ -249,8 +262,8 @@
 
   /* ---------- applications funnel ---------- */
   .funnel {
-    background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 22px;
-    padding: 6px 16px; margin-bottom: 18px;
+    background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 28px;
+    padding: 6px 16px; margin-bottom: 18px; box-shadow: var(--card-shadow);
   }
   .funnel-row { display: flex; flex-direction: column; padding: 12px 0; }
   .funnel-row + .funnel-row { border-top: 1px dashed var(--border); }
@@ -264,8 +277,9 @@
   /* ---------- application cards ---------- */
   .apps-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
   .app-card {
-    background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 24px;
+    background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 28px;
     padding: 15px 15px 13px; display: flex; flex-direction: column; gap: 10px; position: relative;
+    box-shadow: var(--card-shadow);
   }
   .app-card .app-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .app-card .app-company { font-weight: 700; font-size: 14.5px; line-height: 1.3; }
@@ -301,7 +315,7 @@
   .app-card .app-deadline-label.is-urgent { color: var(--urgent); }
   .app-card .app-deadline input[type="date"] {
     font-family: inherit; font-size: 12px; color: var(--ink); background: var(--tile);
-    border: 1px solid var(--border); border-radius: 10px; padding: 6px 8px; color-scheme: dark;
+    border: 1px solid var(--border); border-radius: 10px; padding: 6px 8px; color-scheme: light;
   }
 
   /* ---------- apps filter ---------- */
@@ -327,8 +341,9 @@
     padding: 12px; cursor: pointer; margin-bottom: 14px;
   }
   .add-form {
-    background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 22px;
+    background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 28px;
     padding: 14px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;
+    box-shadow: var(--card-shadow);
   }
   .add-form[hidden] { display: none; }
   .add-form input, .add-form textarea {
@@ -338,7 +353,7 @@
   .add-form textarea { min-height: 56px; }
   .add-form .add-field { display: flex; flex-direction: column; gap: 4px; }
   .add-form .add-field label { font-size: 11px; color: var(--muted); }
-  .add-form input[type="date"] { color-scheme: dark; }
+  .add-form input[type="date"] { color-scheme: light; }
   .add-form .add-actions { display: flex; gap: 8px; }
   .add-form .add-actions button {
     flex: 1; font-family: inherit; font-size: 13px; font-weight: 700; border: none;
@@ -349,8 +364,9 @@
 
   /* ---------- skills page ---------- */
   .track-note {
-    background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 22px;
+    background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 28px;
     padding: 16px; margin-bottom: 18px; display: flex; flex-direction: column; gap: 8px;
+    box-shadow: var(--card-shadow);
   }
   .track-note h3 { font-size: 13.5px; font-weight: 700; }
   .track-note p { font-size: 12px; color: var(--muted); line-height: 1.55; }
@@ -361,8 +377,9 @@
 
   .skills-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
   .skill-card {
-    background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 24px;
+    background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 28px;
     padding: 15px 15px 13px; display: flex; flex-direction: column; gap: 10px;
+    box-shadow: var(--card-shadow);
   }
   .skill-card .skill-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
   .skill-card .skill-title { font-weight: 700; font-size: 14.5px; line-height: 1.3; }
@@ -383,8 +400,9 @@
 
   /* ---------- profile page ---------- */
   .profile-card {
-    background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 22px;
+    background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 28px;
     padding: 16px; display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px;
+    box-shadow: var(--card-shadow);
   }
   .profile-avatar {
     width: 56px; height: 56px; border-radius: 50%; background: var(--lime); color: var(--lime-ink);
@@ -398,6 +416,56 @@
     border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; width: 100%; resize: vertical;
   }
   .profile-form textarea { min-height: 90px; }
+
+  /* ---------- plan switcher / import sheet ---------- */
+  .topbar-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+  .sheet-overlay {
+    position: absolute; inset: 0; z-index: 30; border-radius: 40px; overflow: hidden;
+    background: rgba(5,7,12,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .sheet-overlay[hidden] { display: none; }
+  @media (max-width: 460px) { .sheet-overlay { border-radius: 0; } }
+  .sheet {
+    width: 100%; max-height: 84%; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    background: var(--surface); border-radius: 28px 28px 0 0;
+    padding: 18px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+    display: flex; flex-direction: column; gap: 14px;
+    box-shadow: 0 -20px 50px -20px rgba(0,0,0,.5);
+  }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; }
+  .sheet-head h2 { font-size: 16px; font-weight: 700; }
+  .sheet-close {
+    border: none; background: var(--tile-btn); color: var(--ink); width: 30px; height: 30px;
+    border-radius: 50%; cursor: pointer; font-size: 13px; flex: 0 0 auto;
+  }
+  .plan-list { display: flex; flex-direction: column; gap: 8px; }
+  .plan-row {
+    display: flex; align-items: center; gap: 8px; background: var(--card-surface-bg);
+    border-radius: 18px; padding: 6px 6px 6px 14px; border: 1px solid transparent;
+    box-shadow: var(--card-shadow);
+  }
+  .plan-row.is-active { border-color: rgba(150,175,255,.5); }
+  .plan-row-main {
+    flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+    background: none; border: none; padding: 8px 0; cursor: pointer; text-align: left; min-width: 0;
+  }
+  .plan-row-name { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .plan-row-meta { font-size: 11px; color: var(--muted); }
+  .plan-row-check {
+    width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border); flex: 0 0 auto;
+  }
+  .plan-row.is-active .plan-row-check { background: var(--lime); border-color: transparent; }
+  .plan-del {
+    border: none; background: var(--tile-btn); color: var(--muted); font-size: 14px; cursor: pointer;
+    width: 28px; height: 28px; border-radius: 50%; flex: 0 0 auto;
+  }
+  .plan-or { font-size: 11px; color: var(--muted); text-align: center; margin: -4px 0; }
+  .plan-status { font-size: 12px; padding: 8px 10px; border-radius: 10px; background: var(--tile); color: var(--muted); }
+  .plan-status[hidden] { display: none; }
+  .plan-status.is-error { background: var(--urgent-bg); color: var(--urgent); }
+  .plan-status.is-ok { background: rgba(111,240,176,.14); color: #6FF0B0; }
+  .plan-hint { font-size: 11px; color: var(--muted); line-height: 1.5; }
 </style>
 <div class="device-stage">
 <div class="phone-shell">
@@ -480,25 +548,41 @@
   <div class="wrap">
     <div class="topbar">
       <div class="head-titles">
-        <p class="eyebrow">На основі 7 вакансій</p>
-        <h1>Навички і скіли</h1>
+        <p class="eyebrow" id="skillsEyebrow">На основі 7 вакансій</p>
+        <h1 id="skillsTitle">Навички і скіли</h1>
       </div>
-      <button type="button" class="icon-btn notify-btn" aria-label="Термінові сповіщення">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" focusable="false">
-          <path d="M15.5 18C15.5 19.933 13.933 21.5 12 21.5C10.067 21.5 8.5 19.933 8.5 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M19.2311 18H4.76887C3.79195 18 3 17.208 3 16.2311C3 15.762 3.18636 15.3121 3.51809 14.9803L4.12132 14.3771C4.68393 13.8145 5 13.0514 5 12.2558V9.5C5 5.63401 8.13401 2.5 12 2.5C15.866 2.5 19 5.634 19 9.5V12.2558C19 13.0514 19.3161 13.8145 19.8787 14.3771L20.4819 14.9803C20.8136 15.3121 21 15.762 21 16.2311C21 17.208 20.208 18 19.2311 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="notify-dot" hidden></span>
-      </button>
+      <div class="topbar-actions">
+        <button type="button" class="icon-btn" id="learningPlanOpenBtn" aria-label="Плани навчання">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" focusable="false">
+            <path d="M12 3L3 8L12 13L21 8L12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M3 12L12 17L21 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3 16L12 21L21 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button type="button" class="icon-btn notify-btn" aria-label="Термінові сповіщення">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" focusable="false">
+            <path d="M15.5 18C15.5 19.933 13.933 21.5 12 21.5C10.067 21.5 8.5 19.933 8.5 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M19.2311 18H4.76887C3.79195 18 3 17.208 3 16.2311C3 15.762 3.18636 15.3121 3.51809 14.9803L4.12132 14.3771C4.68393 13.8145 5 13.0514 5 12.2558V9.5C5 5.63401 8.13401 2.5 12 2.5C15.866 2.5 19 5.634 19 9.5V12.2558C19 13.0514 19.3161 13.8145 19.8787 14.3771L20.4819 14.9803C20.8136 15.3121 21 15.762 21 16.2311C21 17.208 20.208 18 19.2311 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="notify-dot" hidden></span>
+        </button>
+      </div>
     </div>
 
-    <div class="track-note">
-      <span class="track-tag">Пріоритет: Трек A</span>
-      <h3>B2B/SaaS-дашборди з адаптацією під mobile</h3>
-      <p>Найбільше перекриття вимог (вакансії 1, 3, 4) і найближче до цілі "мобільні додатки + SaaS". Найбільша діра — жоден готовий кейс явно не показує адаптацію складного desktop-екрана (таблиця/календар/фільтри) під mobile з повним покриттям станів. Трек B (споживчий mobile/fintech, вакансії 5, 6) — другорядний; motion (Lottie/Jitter/AE) і JIRA/Photoshop — свідомо ігнорувати зараз.</p>
+    <div id="skillsDefaultView">
+      <div class="track-note">
+        <span class="track-tag">Пріоритет: Трек A</span>
+        <h3>B2B/SaaS-дашборди з адаптацією під mobile</h3>
+        <p>Найбільше перекриття вимог (вакансії 1, 3, 4) і найближче до цілі "мобільні додатки + SaaS". Найбільша діра — жоден готовий кейс явно не показує адаптацію складного desktop-екрана (таблиця/календар/фільтри) під mobile з повним покриттям станів. Трек B (споживчий mobile/fintech, вакансії 5, 6) — другорядний; motion (Lottie/Jitter/AE) і JIRA/Photoshop — свідомо ігнорувати зараз.</p>
+      </div>
+
+      <div class="skills-list" id="skillsList"></div>
     </div>
 
-    <div class="skills-list" id="skillsList"></div>
+    <div id="skillsPlanView" hidden>
+      <div class="overview" id="skillsOverview"></div>
+      <div class="board" id="skillsBoard"></div>
+    </div>
 
     <div class="foot">
       <span>Статуси зберігаються автоматично в цьому браузері</span>
@@ -584,6 +668,41 @@
     </button>
   </div>
 </div>
+
+<div class="sheet-overlay" id="planSheetOverlay" hidden>
+  <div class="sheet" id="planSheet">
+    <div class="sheet-head">
+      <h2>Плани навчання</h2>
+      <button type="button" class="sheet-close" id="planSheetClose" aria-label="Закрити">✕</button>
+    </div>
+
+    <div class="plan-list" id="planList"></div>
+
+    <button type="button" class="add-btn" id="planUploadToggle">+ Завантажити план навчання</button>
+
+    <div class="add-form" id="planUploadForm" hidden>
+      <p class="plan-hint">Завантаж .docx/.txt/.md зі своїм roadmap розвитку — з чіткими заголовками тижнів/розділів (наприклад, "Тиждень 1 — ..." або "## Week 1"). Застосунок сам розкладе його на фази, тижні й задачі з чекбоксами прогресу.</p>
+      <div class="add-field">
+        <label for="planFile">Файл (.docx, .txt, .md)</label>
+        <input type="file" id="planFile" accept=".docx,.txt,.md,text/plain,text/markdown">
+      </div>
+      <p class="plan-or">— або —</p>
+      <div class="add-field">
+        <label for="planPasteText">Вставити текст плану</label>
+        <textarea id="planPasteText" placeholder="Встав сюди текст свого roadmap"></textarea>
+      </div>
+      <div class="add-field">
+        <label for="planName">Назва плану (необов'язково)</label>
+        <input type="text" id="planName" placeholder="Наприклад, UI/UX Junior → Middle">
+      </div>
+      <p class="plan-status" id="planParseStatus" hidden></p>
+      <div class="add-actions">
+        <button type="button" class="add-cancel" id="planUploadCancel">Скасувати</button>
+        <button type="button" class="add-save" id="planUploadSave">Розібрати і зберегти</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="phone-home-bar" aria-hidden="true"></div>
 </div>
 </div>
@@ -625,15 +744,22 @@
 
   function updateNotifyDot() {
     var hasUrgent = false;
-    Object.keys(deadlines).forEach(function (taskId) {
-      if (hasUrgent || getStatus(taskId) === 'done') return;
-      var info = deadlineInfo(deadlines[taskId]);
+    ALL_TASKS.forEach(function (t) {
+      if (hasUrgent || getStatus(t.id) === 'done') return;
+      var info = deadlineInfo(deadlines[t.id]);
       if (info && info.urgent) hasUrgent = true;
     });
     if (!hasUrgent) {
       apps.forEach(function (a) {
         if (hasUrgent) return;
         var info = deadlineInfo(a.deadline);
+        if (info && info.urgent) hasUrgent = true;
+      });
+    }
+    if (!hasUrgent && !isDefaultLearningPlan()) {
+      getActiveLearningPlan().allTasks.forEach(function (t) {
+        if (hasUrgent || getLearningStatus(t.id) === 'done') return;
+        var info = deadlineInfo(learningDeadlines[learningPlanKey(t.id)]);
         if (info && info.urgent) hasUrgent = true;
       });
     }
@@ -761,6 +887,262 @@
   var ALL_TASKS = [];
   WEEKBLOCKS.forEach(function (b) { b.tasks.forEach(function (t) { ALL_TASKS.push(t); }); });
 
+  /* ---------- learning plans (uploaded/pasted roadmaps, shown on the "Навички" tab) ---------- */
+  var LEARNING_PLANS_KEY = 'job-learning-plans-v1';
+  var ACTIVE_LEARNING_PLAN_KEY = 'job-active-learning-plan-v1';
+  var learningPlans = [];
+  var activeLearningPlanId = 'default';
+
+  function loadLearningPlans() {
+    try {
+      var raw = localStorage.getItem(LEARNING_PLANS_KEY);
+      learningPlans = raw ? JSON.parse(raw) : [];
+    } catch (e) { learningPlans = []; }
+  }
+  function saveLearningPlans() {
+    try { localStorage.setItem(LEARNING_PLANS_KEY, JSON.stringify(learningPlans)); } catch (e) {}
+  }
+  function loadActiveLearningPlanId() {
+    try { activeLearningPlanId = localStorage.getItem(ACTIVE_LEARNING_PLAN_KEY) || 'default'; } catch (e) { activeLearningPlanId = 'default'; }
+    if (activeLearningPlanId !== 'default' && !learningPlans.some(function (p) { return p.id === activeLearningPlanId; })) {
+      activeLearningPlanId = 'default';
+    }
+  }
+  function setActiveLearningPlanId(id) {
+    activeLearningPlanId = id;
+    try { localStorage.setItem(ACTIVE_LEARNING_PLAN_KEY, id); } catch (e) {}
+  }
+  function learningPlanKey(id) { return activeLearningPlanId === 'default' ? id : (activeLearningPlanId + '::' + id); }
+  function isDefaultLearningPlan() { return activeLearningPlanId === 'default'; }
+
+  function getActiveLearningPlan() {
+    if (activeLearningPlanId === 'default') {
+      return { id: 'default', name: 'Навички і скіли', eyebrow: 'На основі 7 вакансій', isDefault: true };
+    }
+    var plan = learningPlans.filter(function (p) { return p.id === activeLearningPlanId; })[0];
+    if (!plan) { activeLearningPlanId = 'default'; return getActiveLearningPlan(); }
+    var allTasks = [];
+    plan.weekblocks.forEach(function (b) { b.tasks.forEach(function (t) { allTasks.push(t); }); });
+    return {
+      id: plan.id, name: plan.name, isDefault: false,
+      eyebrow: plan.weekblocks.length + ' ' + pluralize(plan.weekblocks.length, ['розділ', 'розділи', 'розділів']) + ' · власний план',
+      phaseOrder: plan.phaseOrder, phaseSpans: plan.phaseSpans, weekblocks: plan.weekblocks, allTasks: allTasks
+    };
+  }
+
+  function renderSkillsHeader() {
+    var active = getActiveLearningPlan();
+    document.getElementById('skillsTitle').textContent = active.name;
+    document.getElementById('skillsEyebrow').textContent = active.eyebrow;
+  }
+
+  /* ---------- plan import: turn an uploaded/pasted roadmap into plan data ---------- */
+  function pluralize(n, forms) {
+    var n10 = n % 10, n100 = n % 100;
+    if (n10 === 1 && n100 !== 11) return forms[0];
+    if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return forms[1];
+    return forms[2];
+  }
+  function truncateText(s, n) { return s.length > n ? s.slice(0, n - 1).trim() + '…' : s; }
+  function shortPhaseLabel(phase) {
+    var head = phase.split(/\s+[—–-]\s+/)[0];
+    return truncateText(head, 22);
+  }
+
+  var JSZIP_URL = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+  var jszipLoadPromise = null;
+  function ensureJSZip() {
+    if (window.JSZip) return Promise.resolve();
+    if (jszipLoadPromise) return jszipLoadPromise;
+    jszipLoadPromise = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = JSZIP_URL;
+      s.onload = function () { resolve(); };
+      s.onerror = function () { reject(new Error('Не вдалося завантажити бібліотеку для .docx — потрібне інтернет-з’єднання (або встав текст замість файлу).')); };
+      document.head.appendChild(s);
+    });
+    return jszipLoadPromise;
+  }
+
+  var HEADING_STYLE_LEVEL = { title: 0, heading1: 1, heading2: 2, heading3: 3, heading4: 4, heading5: 5, heading6: 6 };
+  function styleLevel(styleId) {
+    if (!styleId) return null;
+    var key = styleId.replace(/\s+/g, '').toLowerCase();
+    return HEADING_STYLE_LEVEL.hasOwnProperty(key) ? HEADING_STYLE_LEVEL[key] : null;
+  }
+  function isListStyle(styleId) { return !!styleId && /list/i.test(styleId); }
+
+  var WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+  function docxXmlToParagraphs(xmlText) {
+    var xml = new DOMParser().parseFromString(xmlText, 'application/xml');
+    var pNodes = xml.getElementsByTagNameNS(WORD_NS, 'p');
+    var paragraphs = [];
+    for (var i = 0; i < pNodes.length; i++) {
+      var p = pNodes[i];
+      var styleEl = p.getElementsByTagNameNS(WORD_NS, 'pStyle')[0];
+      var styleId = styleEl ? styleEl.getAttributeNS(WORD_NS, 'val') : null;
+      var tNodes = p.getElementsByTagNameNS(WORD_NS, 't');
+      var text = '';
+      for (var j = 0; j < tNodes.length; j++) text += tNodes[j].textContent;
+      text = text.replace(/\s+/g, ' ').trim();
+      var numPr = p.getElementsByTagNameNS(WORD_NS, 'numPr')[0];
+      paragraphs.push({ style: styleId, text: text, isList: isListStyle(styleId) || !!numPr });
+    }
+    return paragraphs;
+  }
+
+  function textToParagraphs(text) {
+    var lines = text.split(/\r\n|\r|\n/);
+    var paragraphs = [];
+    var MD_H_RE = /^(#{1,6})\s+(.*)/;
+    var MONTH_RE = /^(місяць|місяц|month|фаза|phase|module|модуль|частина|розділ|section)\s*\d+/i;
+    var WEEK_RE = /^(тиждень|тиж\.?|week|sprint|спринт|day|день|unit|topic|lesson|урок)\s*\d+/i;
+    var BULLET_RE = /^[-*•●▪]\s+(.*)/;
+    lines.forEach(function (raw) {
+      var line = raw.trim();
+      if (!line) return;
+      var mdMatch = line.match(MD_H_RE);
+      if (mdMatch) {
+        var lvl = mdMatch[1].length;
+        var style = lvl === 1 ? 'Title' : ('Heading' + Math.min(lvl - 1, 6));
+        paragraphs.push({ style: style, text: mdMatch[2].trim(), isList: false });
+        return;
+      }
+      if (line.length < 90 && MONTH_RE.test(line)) { paragraphs.push({ style: 'Heading1', text: line, isList: false }); return; }
+      if (line.length < 90 && WEEK_RE.test(line)) { paragraphs.push({ style: 'Heading2', text: line, isList: false }); return; }
+      var bulletMatch = line.match(BULLET_RE);
+      if (bulletMatch) { paragraphs.push({ style: 'ListBullet', text: bulletMatch[1].trim(), isList: true }); return; }
+      paragraphs.push({ style: null, text: line, isList: false });
+    });
+    return paragraphs;
+  }
+
+  var GOAL_RE = /^(ціль|мета|goal|objective)\s*:\s*/i;
+  var RESULT_RE = /^(артефакт|результат|result|deliverable|outcome|checkpoint|чекпоінт|middle checkpoint)\s*:?\s*/i;
+
+  function paragraphsToPlan(paragraphs, fallbackName) {
+    var titlePara = paragraphs.filter(function (p) { return styleLevel(p.style) === 0 && p.text; })[0];
+    var name = titlePara ? titlePara.text : fallbackName;
+
+    var weekblocks = [];
+    var phaseOrder = [];
+    var phaseIntros = {};
+    var currentPhase = null;
+    var currentBlock = null;
+
+    paragraphs.forEach(function (p) {
+      var lvl = styleLevel(p.style);
+      var text = p.text;
+      if (!text) return;
+      if (lvl === 0) return;
+
+      if (lvl === 1) {
+        currentPhase = text;
+        if (phaseOrder.indexOf(currentPhase) === -1) phaseOrder.push(currentPhase);
+        currentBlock = null;
+        return;
+      }
+      if (lvl === 2) {
+        if (!currentPhase) {
+          currentPhase = 'План';
+          if (phaseOrder.indexOf(currentPhase) === -1) phaseOrder.push(currentPhase);
+        }
+        currentBlock = { phase: currentPhase, label: text, _descLines: [], _resultLines: [], _checklist: [], _goal: null };
+        weekblocks.push(currentBlock);
+        return;
+      }
+      if (lvl >= 3) {
+        if (currentBlock) currentBlock._descLines.push('— ' + text);
+        else if (currentPhase && phaseIntros[currentPhase] == null) phaseIntros[currentPhase] = text;
+        return;
+      }
+
+      if (!currentBlock) {
+        if (currentPhase && phaseIntros[currentPhase] == null) phaseIntros[currentPhase] = text;
+        return;
+      }
+      if (!p.isList && GOAL_RE.test(text) && !currentBlock._goal) {
+        currentBlock._goal = text.replace(GOAL_RE, '').trim();
+        currentBlock._descLines.push(text);
+        return;
+      }
+      if (!p.isList && RESULT_RE.test(text)) {
+        currentBlock._resultLines.push(text);
+        return;
+      }
+      if (p.isList) {
+        currentBlock._checklist.push(text);
+      } else {
+        currentBlock._descLines.push(text);
+      }
+    });
+
+    var taskCounter = 0;
+    weekblocks.forEach(function (block) {
+      taskCounter++;
+      block.tasks = [{
+        id: 'imp' + taskCounter,
+        title: block._goal || block.label,
+        desc: block._descLines.join('\n'),
+        result: block._resultLines.join(' '),
+        checklist: block._checklist
+      }];
+      delete block._descLines; delete block._resultLines; delete block._checklist; delete block._goal;
+    });
+
+    phaseOrder = phaseOrder.filter(function (ph) { return weekblocks.some(function (b) { return b.phase === ph; }); });
+    var phaseSpans = {};
+    phaseOrder.forEach(function (ph) {
+      var count = weekblocks.filter(function (b) { return b.phase === ph; }).length;
+      phaseSpans[ph] = phaseIntros[ph] ? truncateText(phaseIntros[ph], 60) : (count + ' ' + pluralize(count, ['тиждень', 'тижні', 'тижнів']));
+    });
+
+    return { name: name, phaseOrder: phaseOrder, phaseSpans: phaseSpans, weekblocks: weekblocks };
+  }
+
+  function flatFallbackPlan(paragraphs, fallbackName) {
+    var items = paragraphs.filter(function (p) { return p.text; });
+    var weekblocks = items.map(function (p, i) {
+      return { phase: 'План', label: truncateText(p.text, 40), tasks: [{ id: 'imp' + (i + 1), title: truncateText(p.text, 60), desc: p.text, result: '' }] };
+    });
+    return {
+      name: fallbackName,
+      phaseOrder: weekblocks.length ? ['План'] : [],
+      phaseSpans: { 'План': weekblocks.length + ' ' + pluralize(weekblocks.length, ['пункт', 'пункти', 'пунктів']) },
+      weekblocks: weekblocks
+    };
+  }
+
+  function buildPlanFromParagraphs(paragraphs, fallbackName) {
+    var plan = paragraphsToPlan(paragraphs, fallbackName);
+    if (!plan.weekblocks.length) plan = flatFallbackPlan(paragraphs, fallbackName);
+    return plan;
+  }
+
+  function buildPlanFromDocx(arrayBuffer, fallbackName) {
+    return ensureJSZip()
+      .then(function () { return window.JSZip.loadAsync(arrayBuffer); })
+      .then(function (zip) {
+        var docFile = zip.file('word/document.xml');
+        if (!docFile) throw new Error('Це не схоже на файл .docx (не знайдено word/document.xml).');
+        return docFile.async('text');
+      })
+      .then(function (xmlText) { return buildPlanFromParagraphs(docxXmlToParagraphs(xmlText), fallbackName); });
+  }
+
+  function buildPlanFromText(text, fallbackName) {
+    return Promise.resolve(buildPlanFromParagraphs(textToParagraphs(text), fallbackName));
+  }
+
+  function buildPlanFromFile(file) {
+    var fallbackName = file.name.replace(/\.[^.]+$/, '');
+    var ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (ext === 'docx') {
+      return file.arrayBuffer().then(function (buf) { return buildPlanFromDocx(buf, fallbackName); });
+    }
+    return file.text().then(function (text) { return buildPlanFromText(text, fallbackName); });
+  }
+
   var state = {};
   function load() {
     try {
@@ -773,12 +1155,20 @@
   }
   function getStatus(id) { return state[id] || 'queue'; }
   function setStatus(id, s) { state[id] = s; save(); renderOverview(); updateNotifyDot(); }
+  var jobStore = {
+    getStatus: getStatus,
+    setStatus: setStatus,
+    getDeadline: function (id) { return deadlines[id] || ''; },
+    setDeadline: function (id, val) { if (val) deadlines[id] = val; else delete deadlines[id]; saveDeadlines(); },
+    getItemChecked: function (id, i) { return state[id + '__c' + i] === true; },
+    setItemChecked: function (id, i, checked) { state[id + '__c' + i] = checked; save(); }
+  };
 
-  function taskEl(t) {
+  function taskEl(t, store) {
     var el = document.createElement('article');
     el.className = 'task';
     el.dataset.id = t.id;
-    el.dataset.status = getStatus(t.id);
+    el.dataset.status = store.getStatus(t.id);
 
     var head = document.createElement('div');
     head.className = 'task-head';
@@ -812,9 +1202,9 @@
     el.appendChild(chip);
 
     function refreshChip() {
-      var info = deadlineInfo(deadlines[t.id]);
+      var info = deadlineInfo(store.getDeadline(t.id));
       if (!info) { chip.hidden = true; return; }
-      var urgent = info.urgent && getStatus(t.id) !== 'done';
+      var urgent = info.urgent && store.getStatus(t.id) !== 'done';
       chip.hidden = false;
       chip.classList.toggle('is-urgent', urgent);
       chip.textContent = (urgent ? '🔥 ' : '📅 ') + info.text;
@@ -828,6 +1218,37 @@
       d.textContent = t.desc;
       el.appendChild(d);
     }
+    var cl = null;
+    if (t.checklist && t.checklist.length) {
+      cl = document.createElement('ul');
+      cl.className = 'task-checklist';
+      cl.hidden = true;
+      t.checklist.forEach(function (item, i) {
+        var li = document.createElement('li');
+        li.className = 'tc-item';
+        var checked = store.getItemChecked(t.id, i);
+        li.dataset.checked = String(checked);
+        var box = document.createElement('button');
+        box.type = 'button';
+        box.className = 'tc-box';
+        box.setAttribute('aria-pressed', String(checked));
+        box.setAttribute('aria-label', item);
+        var span = document.createElement('span');
+        span.className = 'tc-text';
+        span.textContent = item;
+        box.addEventListener('click', function () {
+          var next = !store.getItemChecked(t.id, i);
+          store.setItemChecked(t.id, i, next);
+          li.dataset.checked = String(next);
+          box.setAttribute('aria-pressed', String(next));
+        });
+        li.appendChild(box);
+        li.appendChild(span);
+        cl.appendChild(li);
+      });
+      el.appendChild(cl);
+    }
+
     if (t.result) {
       r = document.createElement('p');
       r.className = 'task-result';
@@ -844,10 +1265,9 @@
     dLabel.appendChild(document.createTextNode('Дедлайн'));
     var dInput = document.createElement('input');
     dInput.type = 'date';
-    dInput.value = deadlines[t.id] || '';
+    dInput.value = store.getDeadline(t.id);
     dInput.addEventListener('change', function () {
-      if (dInput.value) deadlines[t.id] = dInput.value; else delete deadlines[t.id];
-      saveDeadlines();
+      store.setDeadline(t.id, dInput.value);
       refreshChip();
     });
     dLabel.appendChild(dInput);
@@ -857,18 +1277,18 @@
     dClear.textContent = 'Прибрати';
     dClear.addEventListener('click', function () {
       dInput.value = '';
-      delete deadlines[t.id];
-      saveDeadlines();
+      store.setDeadline(t.id, '');
       refreshChip();
     });
     deadlineEdit.appendChild(dLabel);
     deadlineEdit.appendChild(dClear);
     el.appendChild(deadlineEdit);
 
-    if (d || r) {
+    if (d || r || cl) {
       sum.addEventListener('click', function () {
-        var opening = r ? r.hidden : !d.classList.contains('is-expanded');
+        var opening = !sum.classList.contains('is-open');
         if (r) r.hidden = !opening;
+        if (cl) cl.hidden = !opening;
         if (d) d.classList.toggle('is-expanded', opening);
         deadlineEdit.hidden = !opening;
         sum.classList.toggle('is-open', opening);
@@ -884,10 +1304,10 @@
       btn.type = 'button';
       btn.dataset.key = s.id;
       btn.textContent = s.label;
-      btn.setAttribute('aria-pressed', String(getStatus(t.id) === s.id));
+      btn.setAttribute('aria-pressed', String(store.getStatus(t.id) === s.id));
       btn.addEventListener('click', function () {
         el.dataset.status = s.id;
-        setStatus(t.id, s.id);
+        store.setStatus(t.id, s.id);
         seg.querySelectorAll('button').forEach(function (b) {
           b.setAttribute('aria-pressed', String(b.dataset.key === s.id));
         });
@@ -926,7 +1346,7 @@
       wrap.appendChild(h2);
       var list = document.createElement('div');
       list.className = 'task-list';
-      block.tasks.forEach(function (t) { list.appendChild(taskEl(t)); });
+      block.tasks.forEach(function (t) { list.appendChild(taskEl(t, jobStore)); });
       wrap.appendChild(list);
       board.appendChild(wrap);
     });
@@ -969,6 +1389,137 @@
   navBtns.apps.addEventListener('click', function () { showPage('apps'); });
   navBtns.skills.addEventListener('click', function () { showPage('skills'); });
   navBtns.profile.addEventListener('click', function () { showPage('profile'); });
+
+  /* ---------- learning plan switcher sheet (on the "Навички" tab) ---------- */
+  var planSheetOverlay = document.getElementById('planSheetOverlay');
+  var planFileInput = document.getElementById('planFile');
+  var planPasteText = document.getElementById('planPasteText');
+  var planNameInput = document.getElementById('planName');
+  var planParseStatus = document.getElementById('planParseStatus');
+  var planUploadForm = document.getElementById('planUploadForm');
+  var planUploadToggle = document.getElementById('planUploadToggle');
+
+  function setPlanStatus(msg, kind) {
+    planParseStatus.hidden = !msg;
+    planParseStatus.textContent = msg || '';
+    planParseStatus.className = 'plan-status' + (kind ? ' is-' + kind : '');
+  }
+
+  function resetPlanUploadForm() {
+    planUploadForm.hidden = true;
+    planUploadToggle.hidden = false;
+    planFileInput.value = '';
+    planPasteText.value = '';
+    planNameInput.value = '';
+    setPlanStatus('');
+  }
+
+  function refreshAfterLearningPlanChange() {
+    renderSkillsHeader();
+    renderSkillsPageContent();
+    updateNotifyDot();
+  }
+
+  function renderPlanList() {
+    var wrap = document.getElementById('planList');
+    wrap.innerHTML = '';
+    var rows = [{ id: 'default', name: 'Базовий чекліст навичок', meta: '9 навичок · вбудований', builtin: true }]
+      .concat(learningPlans.map(function (p) {
+        return { id: p.id, name: p.name, meta: p.weekblocks.length + ' ' + pluralize(p.weekblocks.length, ['розділ', 'розділи', 'розділів']) + ' · власний', builtin: false };
+      }));
+    rows.forEach(function (r) {
+      var row = document.createElement('div');
+      row.className = 'plan-row' + (r.id === activeLearningPlanId ? ' is-active' : '');
+
+      var main = document.createElement('button');
+      main.type = 'button';
+      main.className = 'plan-row-main';
+      var nameEl = document.createElement('span');
+      nameEl.className = 'plan-row-name';
+      nameEl.textContent = r.name;
+      var metaEl = document.createElement('span');
+      metaEl.className = 'plan-row-meta';
+      metaEl.textContent = r.meta;
+      main.appendChild(nameEl);
+      main.appendChild(metaEl);
+      main.addEventListener('click', function () {
+        setActiveLearningPlanId(r.id);
+        renderPlanList();
+        refreshAfterLearningPlanChange();
+      });
+      row.appendChild(main);
+
+      if (r.builtin) {
+        var check = document.createElement('span');
+        check.className = 'plan-row-check';
+        row.appendChild(check);
+      } else {
+        var del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'plan-del';
+        del.textContent = '×';
+        del.setAttribute('aria-label', 'Видалити план ' + r.name);
+        del.addEventListener('click', function () {
+          learningPlans = learningPlans.filter(function (p) { return p.id !== r.id; });
+          saveLearningPlans();
+          var prefix = r.id + '::';
+          Object.keys(learningState).forEach(function (k) { if (k.indexOf(prefix) === 0) delete learningState[k]; });
+          Object.keys(learningDeadlines).forEach(function (k) { if (k.indexOf(prefix) === 0) delete learningDeadlines[k]; });
+          saveLearningState();
+          saveLearningDeadlines();
+          if (activeLearningPlanId === r.id) setActiveLearningPlanId('default');
+          renderPlanList();
+          refreshAfterLearningPlanChange();
+        });
+        row.appendChild(del);
+      }
+      wrap.appendChild(row);
+    });
+  }
+
+  function openPlanSheet() {
+    renderPlanList();
+    resetPlanUploadForm();
+    planSheetOverlay.hidden = false;
+  }
+  function closePlanSheet() { planSheetOverlay.hidden = true; }
+
+  document.getElementById('learningPlanOpenBtn').addEventListener('click', openPlanSheet);
+  document.getElementById('planSheetClose').addEventListener('click', closePlanSheet);
+  planSheetOverlay.addEventListener('click', function (e) { if (e.target === planSheetOverlay) closePlanSheet(); });
+
+  planUploadToggle.addEventListener('click', function () {
+    planUploadForm.hidden = false;
+    planUploadToggle.hidden = true;
+  });
+  document.getElementById('planUploadCancel').addEventListener('click', resetPlanUploadForm);
+
+  document.getElementById('planUploadSave').addEventListener('click', function () {
+    var file = planFileInput.files && planFileInput.files[0];
+    var pasted = planPasteText.value.trim();
+    if (!file && !pasted) { setPlanStatus('Обери файл або встав текст плану.', 'error'); return; }
+
+    setPlanStatus('Розбираю…', null);
+    var work = file ? buildPlanFromFile(file) : buildPlanFromText(pasted, 'Мій план');
+    work.then(function (plan) {
+      if (!plan.weekblocks.length) {
+        setPlanStatus('Не вдалося знайти жодного розділу в файлі. Спробуй файл із чіткими заголовками тижнів/розділів.', 'error');
+        return;
+      }
+      var customName = planNameInput.value.trim();
+      if (customName) plan.name = customName;
+      var id = 'p' + Date.now();
+      learningPlans.push({ id: id, name: plan.name, createdAt: Date.now(), phaseOrder: plan.phaseOrder, phaseSpans: plan.phaseSpans, weekblocks: plan.weekblocks });
+      saveLearningPlans();
+      setActiveLearningPlanId(id);
+      setPlanStatus('Готово: ' + plan.weekblocks.length + ' ' + pluralize(plan.weekblocks.length, ['розділ', 'розділи', 'розділів']) + '. План збережено і обрано.', 'ok');
+      renderPlanList();
+      refreshAfterLearningPlanChange();
+      setTimeout(closePlanSheet, 1000);
+    }).catch(function (err) {
+      setPlanStatus('Помилка: ' + err.message, 'error');
+    });
+  });
 
   /* ---------- applications (job-application tracker) ---------- */
   var APPS_KEY = 'job-applications-v1';
@@ -1310,7 +1861,126 @@
   }
 
   loadSkills();
-  renderSkills();
+
+  /* ---------- learning-plan board (replaces the checklist above when a custom plan is active) ---------- */
+  var LEARNING_STATE_KEY = 'job-learning-plan-statuses-v1';
+  var learningState = {};
+  function loadLearningState() {
+    try {
+      var raw = localStorage.getItem(LEARNING_STATE_KEY);
+      learningState = raw ? JSON.parse(raw) : {};
+    } catch (e) { learningState = {}; }
+  }
+  function saveLearningState() {
+    try { localStorage.setItem(LEARNING_STATE_KEY, JSON.stringify(learningState)); } catch (e) {}
+  }
+  function getLearningStatus(id) { return learningState[learningPlanKey(id)] || 'queue'; }
+  function setLearningStatus(id, s) { learningState[learningPlanKey(id)] = s; saveLearningState(); renderLearningOverview(); updateNotifyDot(); }
+
+  var LEARNING_DEADLINES_KEY = 'job-learning-plan-deadlines-v1';
+  var learningDeadlines = {};
+  function loadLearningDeadlines() {
+    try {
+      var raw = localStorage.getItem(LEARNING_DEADLINES_KEY);
+      learningDeadlines = raw ? JSON.parse(raw) : {};
+    } catch (e) { learningDeadlines = {}; }
+  }
+  function saveLearningDeadlines() {
+    try { localStorage.setItem(LEARNING_DEADLINES_KEY, JSON.stringify(learningDeadlines)); } catch (e) {}
+    updateNotifyDot();
+  }
+
+  var learningStore = {
+    getStatus: getLearningStatus,
+    setStatus: setLearningStatus,
+    getDeadline: function (id) { return learningDeadlines[learningPlanKey(id)] || ''; },
+    setDeadline: function (id, val) {
+      var k = learningPlanKey(id);
+      if (val) learningDeadlines[k] = val; else delete learningDeadlines[k];
+      saveLearningDeadlines();
+    },
+    getItemChecked: function (id, i) { return learningState[learningPlanKey(id + '__c' + i)] === true; },
+    setItemChecked: function (id, i, checked) { learningState[learningPlanKey(id + '__c' + i)] = checked; saveLearningState(); }
+  };
+
+  function renderLearningOverview() {
+    var ov = document.getElementById('skillsOverview');
+    ov.innerHTML = '';
+    var active = getActiveLearningPlan();
+    if (active.isDefault) return;
+    active.phaseOrder.forEach(function (phase, i) {
+      var tasks = active.allTasks.filter(function (t) {
+        return active.weekblocks.some(function (b) { return b.phase === phase && b.tasks.indexOf(t) !== -1; });
+      });
+      var done = tasks.filter(function (t) { return getLearningStatus(t.id) === 'done'; }).length;
+      var card = document.createElement('div');
+      card.className = 'ov-card' + (done === tasks.length ? ' ov-complete' : '');
+      card.dataset.phase = String(i);
+      var name = document.createElement('div');
+      name.className = 'ov-name';
+      name.textContent = shortPhaseLabel(phase);
+      name.title = phase;
+      var progress = document.createElement('div');
+      progress.className = 'ov-progress';
+      progress.innerHTML = '<span class="ov-count">' + done + '/' + tasks.length + '</span><span class="ov-check">✓</span>';
+      card.appendChild(name);
+      card.appendChild(progress);
+      ov.appendChild(card);
+    });
+  }
+
+  function renderLearningBoard() {
+    var board = document.getElementById('skillsBoard');
+    board.innerHTML = '';
+    var active = getActiveLearningPlan();
+    if (active.isDefault) return;
+    var lastPhase = null;
+    active.weekblocks.forEach(function (block) {
+      if (block.phase !== lastPhase) {
+        var head = document.createElement('div');
+        head.className = 'phase-head';
+        var name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = block.phase;
+        var span = document.createElement('span');
+        span.className = 'span';
+        span.textContent = active.phaseSpans[block.phase] || '';
+        head.appendChild(name);
+        head.appendChild(span);
+        board.appendChild(head);
+        lastPhase = block.phase;
+      }
+      var wrap = document.createElement('div');
+      wrap.className = 'week-block';
+      var h2 = document.createElement('h2');
+      h2.textContent = block.label;
+      wrap.appendChild(h2);
+      var list = document.createElement('div');
+      list.className = 'task-list';
+      block.tasks.forEach(function (t) { list.appendChild(taskEl(t, learningStore)); });
+      wrap.appendChild(list);
+      board.appendChild(wrap);
+    });
+  }
+
+  function renderSkillsPageContent() {
+    var isDefault = isDefaultLearningPlan();
+    document.getElementById('skillsDefaultView').hidden = !isDefault;
+    document.getElementById('skillsPlanView').hidden = isDefault;
+    if (isDefault) {
+      renderSkills();
+    } else {
+      renderLearningOverview();
+      renderLearningBoard();
+    }
+  }
+
+  loadLearningPlans();
+  loadActiveLearningPlanId();
+  loadLearningState();
+  loadLearningDeadlines();
+  renderSkillsHeader();
+  renderSkillsPageContent();
 
   /* ---------- personal profile (особистий кабінет) ---------- */
   var PROFILE_KEY = 'job-profile-v1';
@@ -1354,7 +2024,11 @@
   updateNotifyDot();
 
   /* Test hook: exposes pure logic for tests/index.html. No effect on app behavior. */
-  window.__jobAppTest = { deadlineInfo: deadlineInfo, STAGES: STAGES, stageIndex: stageIndex };
+  window.__jobAppTest = {
+    deadlineInfo: deadlineInfo, STAGES: STAGES, stageIndex: stageIndex,
+    buildPlanFromDocx: buildPlanFromDocx, buildPlanFromText: buildPlanFromText, buildPlanFromFile: buildPlanFromFile,
+    getActiveLearningPlan: getActiveLearningPlan, setActiveLearningPlanId: setActiveLearningPlanId
+  };
 })();
 
 if ('serviceWorker' in navigator) {
