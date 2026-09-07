@@ -1,0 +1,50 @@
+/* Learning-plan switcher/import bottom sheet (opened from the Skills page). */
+
+.topbar-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.sheet-overlay {
+  position: absolute; inset: 0; z-index: 30; border-radius: 40px; overflow: hidden;
+  background: rgba(5,7,12,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.sheet-overlay[hidden] { display: none; }
+@media (max-width: 460px) { .sheet-overlay { border-radius: 0; } }
+.sheet {
+  width: 100%; max-height: 84%; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  background: var(--surface); border-radius: 28px 28px 0 0;
+  padding: 18px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 -20px 50px -20px rgba(0,0,0,.5);
+}
+.sheet-head { display: flex; align-items: center; justify-content: space-between; }
+.sheet-head h2 { font-size: 16px; font-weight: 700; }
+.sheet-close {
+  border: none; background: var(--tile-btn); color: var(--ink); width: 30px; height: 30px;
+  border-radius: 50%; cursor: pointer; font-size: 13px; flex: 0 0 auto;
+}
+.plan-list { display: flex; flex-direction: column; gap: 8px; }
+.plan-row {
+  display: flex; align-items: center; gap: 8px; background: var(--card-surface-bg);
+  border-radius: 18px; padding: 6px 6px 6px 14px; border: 1px solid transparent;
+  box-shadow: var(--card-shadow);
+}
+.plan-row.is-active { border-color: rgba(150,175,255,.5); }
+.plan-row-main {
+  flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  background: none; border: none; padding: 8px 0; cursor: pointer; text-align: left; min-width: 0;
+}
+.plan-row-name { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+.plan-row-meta { font-size: 11px; color: var(--muted); }
+.plan-row-check {
+  width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border); flex: 0 0 auto;
+}
+.plan-row.is-active .plan-row-check { background: var(--lime); border-color: transparent; }
+.plan-del {
+  border: none; background: var(--tile-btn); color: var(--muted); font-size: 14px; cursor: pointer;
+  width: 28px; height: 28px; border-radius: 50%; flex: 0 0 auto;
+}
+.plan-or { font-size: 11px; color: var(--muted); text-align: center; margin: -4px 0; }
+.plan-status { font-size: 12px; padding: 8px 10px; border-radius: 10px; background: var(--tile); color: var(--muted); }
+.plan-status[hidden] { display: none; }
+.plan-status.is-error { background: var(--urgent-bg); color: var(--urgent); }
+.plan-status.is-ok { background: rgba(111,240,176,.14); color: #6FF0B0; }
+.plan-hint { font-size: 11px; color: var(--muted); line-height: 1.5; }

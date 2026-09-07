@@ -5,7 +5,8 @@
       "name": "jobbio",
       "runtimeExecutable": "python3",
       "runtimeArgs": ["/Users/anaprideus/Documents/Claude/Jobbio/serve.py"],
-      "port": 8000
+      "port": 8000,
+      "autoPort": true
     }
   ]
 }

@@ -1,0 +1,175 @@
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap');
+
+:root {
+  color-scheme: light;
+  --bg: #F5F6F7;
+  --surface: #FFFFFF;
+  --card-surface-bg: #FFFFFF;
+  --card-shadow: 0 2px 20px rgba(20,30,50,.05);
+  --tile: rgba(0,0,0,.045);
+  --tile-btn: rgba(255,255,255,.6);
+  --seg-idle: rgba(255,255,255,.6);
+  --ink: #282828;
+  --muted: #7F7F7F;
+  --muted-soft: #A7A5A5;
+  --strike: #A7A5A5;
+  --border: rgba(0,0,0,.07);
+  --lime: linear-gradient(135deg, #21A6EE 0%, #2EC6E8 100%);
+  --lime-ink: #FFFFFF;
+  --deadline-gradient: linear-gradient(135deg, #FFB648 0%, #E8752E 100%);
+  --amber: #B9791E;
+  --amber-bg: rgba(185,121,30,.12);
+  --action-blue: #21A6EE;
+  --action-blue-deep: #052B5A;
+  --urgent: #E0503F;
+  --urgent-bg: rgba(224,80,63,.12);
+  --grad-1a: #9FEFC4; --grad-1b: #1E8F6E;
+  --grad-2a: #F0D28C; --grad-2b: #B9791E;
+  --grad-3a: #C9BEF2; --grad-3b: #6B3FA0;
+  --stage: #05070C;
+  --bezel: #070A11;
+  --bezel-edge: rgba(150,175,255,.14);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--stage); }
+body {
+  font-family: 'Urbanist', system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--stage);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 14px;
+  overflow-x: hidden;
+}
+
+/* ---------- phone frame ---------- */
+.device-stage { width: 100%; display: flex; justify-content: center; }
+.phone-shell {
+  position: relative;
+  width: min(390px, 100%);
+  height: min(844px, 88vh);
+  background: var(--bezel);
+  border-radius: 54px;
+  padding: 14px;
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,.45), 0 0 0 1px var(--bezel-edge) inset;
+  flex: 0 0 auto;
+}
+.phone-screen {
+  position: relative;
+  width: 100%; height: 100%;
+  background: var(--bg);
+  border-radius: 40px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.phone-screen::-webkit-scrollbar { display: none; }
+.phone-notch {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  width: 96px; height: 26px; background: var(--bezel); border-radius: 20px;
+  z-index: 5; pointer-events: none;
+}
+.phone-home-bar {
+  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  width: 120px; height: 4px; border-radius: 999px; background: rgba(255,255,255,.55);
+  z-index: 5; pointer-events: none;
+}
+@media (max-width: 460px) {
+  body { padding: 0; }
+  .phone-shell { width: 100%; height: 100dvh; border-radius: 0; padding: 0; box-shadow: none; }
+  .phone-screen { border-radius: 0; }
+  .phone-notch, .phone-home-bar { display: none; }
+}
+
+.app-page { padding: 52px 18px 24px; line-height: 1.4; -webkit-font-smoothing: antialiased; }
+.app-page .wrap { max-width: 100%; margin: 0 auto; }
+
+/* ---------- header ---------- */
+.app-page .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 10px; }
+.app-page .icon-btn {
+  position: relative;
+  width: 36px; height: 36px; border-radius: 999px; background: var(--tile-btn);
+  border: none; display: flex; align-items: center; justify-content: center;
+  font-size: 15px; cursor: pointer; color: var(--ink); flex: 0 0 auto;
+  box-shadow: 0 1px 2px rgba(20,30,50,.06);
+}
+.app-page .notify-dot {
+  position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--urgent); border: 2px solid var(--bg);
+}
+.app-page .notify-dot[hidden] { display: none; }
+.app-page .head-titles { text-align: left; flex: 1; }
+.app-page .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.app-page .head-titles h1 { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+
+/* ---------- brand row ---------- */
+.app-page .brand-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 10px; }
+.app-page .brand-logo {
+  font-weight: 800; font-size: 26px; letter-spacing: -.02em; line-height: 1;
+  background: var(--lime); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+.app-page :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.app-page .foot {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  padding: 4px 2px 18px; font-size: 11.5px; color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .app-page *, .app-page *::before { transition: none !important; }
+}
+
+/* ---------- multi-page + bottom nav ---------- */
+.app-page { padding-bottom: 92px; }
+.app-page[hidden] { display: none; }
+
+.bottom-nav {
+  position: absolute; left: 0; right: 0; bottom: 14px; z-index: 6;
+  display: flex; justify-content: center; pointer-events: none;
+}
+.bottom-nav .bn-pill {
+  pointer-events: auto; display: flex; gap: 4px; align-items: center;
+  background: rgba(255,255,255,.6); backdrop-filter: blur(16px);
+  border-radius: 999px; padding: 6px; box-shadow: 0 8px 24px -8px rgba(0,0,0,.18);
+}
+.bottom-nav button {
+  display: flex; align-items: center; gap: 5px; border: none; cursor: pointer;
+  font-family: inherit; font-size: 12px; font-weight: 600; color: var(--muted);
+  background: transparent; padding: 10px 12px; border-radius: 999px; white-space: nowrap;
+}
+.bottom-nav button[aria-current="true"] { background: var(--ink); color: var(--bg); }
+.bottom-nav button .bn-ic { width: 18px; height: 18px; flex: 0 0 auto; display: block; }
+
+/* ---------- generic add-form (reused by apps + the learning-plan upload sheet) ---------- */
+.add-btn {
+  width: 100%; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ink);
+  background: var(--tile-btn); border: 1px dashed var(--border); border-radius: 999px;
+  padding: 12px; cursor: pointer; margin-bottom: 14px;
+}
+.add-form {
+  background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 28px;
+  padding: 14px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;
+  box-shadow: var(--card-shadow);
+}
+.add-form[hidden] { display: none; }
+.add-form input, .add-form textarea {
+  font-family: inherit; font-size: 13px; color: var(--ink); background: var(--tile);
+  border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; width: 100%; resize: vertical;
+}
+.add-form textarea { min-height: 56px; }
+.add-form .add-field { display: flex; flex-direction: column; gap: 4px; }
+.add-form .add-field label { font-size: 11px; color: var(--muted); }
+.add-form input[type="date"] { color-scheme: light; }
+.add-form .add-actions { display: flex; gap: 8px; }
+.add-form .add-actions button {
+  flex: 1; font-family: inherit; font-size: 13px; font-weight: 700; border: none;
+  border-radius: 999px; padding: 10px; cursor: pointer;
+}
+.add-form .add-save { background: linear-gradient(135deg, var(--action-blue) 0%, var(--action-blue-deep) 100%); color: #FFFFFF; }
+.add-form .add-cancel { background: var(--tile); color: var(--muted); }

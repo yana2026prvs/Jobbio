@@ -8,9 +8,10 @@ This script hardcodes the served directory instead, so no getcwd() call is
 ever made.
 """
 import http.server
+import os
 import socketserver
 
-PORT = 8000
+PORT = int(os.environ.get("PORT", 8000))
 DIRECTORY = "/Users/anaprideus/Documents/Claude/Jobbio"
 
 
