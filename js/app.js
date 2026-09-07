@@ -5,7 +5,6 @@
 // Plan
 loadPlanState();
 loadDeadlines();
-renderOverview();
 renderBoard();
 renderCalendar();
 renderHeroCard();

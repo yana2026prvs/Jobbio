@@ -170,12 +170,6 @@
         record('План: рендериться 26 задач', true);
       } catch (e) { record('План: рендериться 26 задач', false, e.message); }
 
-      try {
-        var ovCount = d.querySelectorAll('.ov-card').length;
-        assert(ovCount === 3, 'знайдено ' + ovCount);
-        record('План: рендериться 3 картки фаз', true);
-      } catch (e) { record('План: рендериться 3 картки фаз', false, e.message); }
-
       var t1 = d.querySelector('.task[data-id="t1"]');
       try {
         t1.querySelector('.seg button[data-key="done"]').click();

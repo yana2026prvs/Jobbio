@@ -76,7 +76,7 @@ function savePlanState() {
 }
 function getStatus(id) { return state[id] || 'queue'; }
 function setStatus(id, s) {
-  state[id] = s; savePlanState(); renderOverview(); updateNotifyDot();
+  state[id] = s; savePlanState(); updateNotifyDot();
   renderCalendar(); renderHeroCard(); applyStatusFilter();
 }
 var jobStore = {
@@ -274,24 +274,6 @@ function renderBoard() {
     block.tasks.forEach(function (t) { list.appendChild(taskEl(t, jobStore)); });
     wrap.appendChild(list);
     board.appendChild(wrap);
-  });
-}
-
-function renderOverview() {
-  var ov = document.getElementById('overview');
-  ov.innerHTML = '';
-  PHASE_ORDER.forEach(function (phase, i) {
-    var tasks = ALL_TASKS.filter(function (t) {
-      return WEEKBLOCKS.some(function (b) { return b.phase === phase && b.tasks.indexOf(t) !== -1; });
-    });
-    var done = tasks.filter(function (t) { return getStatus(t.id) === 'done'; }).length;
-    var card = document.createElement('div');
-    card.className = 'ov-card' + (done === tasks.length ? ' ov-complete' : '');
-    card.dataset.phase = String(i);
-    card.innerHTML =
-      '<div class="ov-name">' + phase + '</div>' +
-      '<div class="ov-progress"><span class="ov-count">' + done + '/' + tasks.length + '</span><span class="ov-check">✓</span></div>';
-    ov.appendChild(card);
   });
 }
 
