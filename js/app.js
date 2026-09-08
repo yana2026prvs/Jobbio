@@ -9,6 +9,7 @@ renderBoard();
 renderCalendar();
 renderHeroCard();
 applyStatusFilter();
+renderPlanHeader();
 
 // Applications
 buildStageFilterChips();

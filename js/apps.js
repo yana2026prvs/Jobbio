@@ -272,9 +272,25 @@ document.getElementById('appsSearch').addEventListener('input', function (e) {
   renderApps();
 });
 
+function appsInProgressCount() {
+  return apps.filter(function (a) {
+    var idx = stageIndex(a.stage);
+    return idx > 0 && idx < STAGES.length - 1;
+  }).length;
+}
+
+function renderAppsHeader() {
+  var subtitle = document.getElementById('appsSubtitle');
+  if (!subtitle) return;
+  var total = apps.length;
+  subtitle.textContent = total + ' ' + pluralize(total, ['компанія', 'компанії', 'компаній']) +
+    ' · ' + appsInProgressCount() + ' в роботі';
+}
+
 function renderApps() {
   renderAppsFunnel();
   refreshSourceFilter();
+  renderAppsHeader();
   var list = document.getElementById('appsList');
   list.innerHTML = '';
   var filtered = apps.filter(matchesFilter);
@@ -292,10 +308,12 @@ function renderApps() {
 }
 
 var appForm = document.getElementById('appForm');
-document.getElementById('appAddBtn').addEventListener('click', function () {
+function openAppForm() {
   appForm.hidden = false;
   document.getElementById('appCompany').focus();
-});
+}
+document.getElementById('appAddBtn').addEventListener('click', openAppForm);
+document.getElementById('appAddHeaderBtn').addEventListener('click', openAppForm);
 document.getElementById('appCancelBtn').addEventListener('click', function () {
   appForm.reset();
   appForm.hidden = true;

@@ -1,6 +1,5 @@
 /* Learning-plan switcher/import bottom sheet (opened from the Skills page). */
 
-.topbar-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 .sheet-overlay {
   position: absolute; inset: 0; z-index: 30; border-radius: 40px; overflow: hidden;
   background: rgba(5,7,12,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);

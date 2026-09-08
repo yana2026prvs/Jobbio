@@ -92,3 +92,62 @@ function renderSkills() {
   list.innerHTML = '';
   SKILLS.forEach(function (s) { list.appendChild(skillCardEl(s)); });
 }
+
+/* ---------- header: "оновлено {дата}" timestamp for the default analysis ---------- */
+var SKILLS_ANALYSIS_UPDATED_KEY = 'job-skills-analysis-updated-v1';
+var UA_MONTHS_GENITIVE = ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня',
+  'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'];
+
+function todayDateStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function formatUaDateShort(dateStr) {
+  var d = new Date(dateStr + 'T00:00:00');
+  return d.getDate() + ' ' + UA_MONTHS_GENITIVE[d.getMonth()];
+}
+function getSkillsAnalysisUpdated() {
+  var stored;
+  try { stored = localStorage.getItem(SKILLS_ANALYSIS_UPDATED_KEY); } catch (e) { stored = null; }
+  if (!stored) {
+    stored = todayDateStr();
+    try { localStorage.setItem(SKILLS_ANALYSIS_UPDATED_KEY, stored); } catch (e) {}
+  }
+  return stored;
+}
+function setSkillsAnalysisUpdatedNow() {
+  try { localStorage.setItem(SKILLS_ANALYSIS_UPDATED_KEY, todayDateStr()); } catch (e) {}
+}
+
+/* ---------- header actions: "Оновити аналіз" + "Ще" menu ---------- */
+document.getElementById('skillsRefreshBtn').addEventListener('click', function () {
+  setSkillsAnalysisUpdatedNow();
+  renderSkillsHeader();
+});
+
+function exportSkillsAnalysis() {
+  var lines = ['Навички — аналіз за вакансіями', 'Оновлено: ' + formatUaDateShort(getSkillsAnalysisUpdated()), ''];
+  var LEVEL_LABEL = { queue: 'Не впевнена', doing: 'Розвиваю', done: 'Впевнена' };
+  SKILLS.forEach(function (s) {
+    lines.push('— ' + s.title + ' (' + s.freq + ') — ' + LEVEL_LABEL[getSkillStatus(s.id)]);
+  });
+  var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'navychky-analiz.txt';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('skillsReplacePlanItem').addEventListener('click', function () {
+  closeAllHeaderPanels();
+  openPlanSheet();
+});
+document.getElementById('skillsExportAnalysisItem').addEventListener('click', function () {
+  closeAllHeaderPanels();
+  exportSkillsAnalysis();
+});
+setupHeaderPanel(document.getElementById('skillsMoreBtn'), document.getElementById('skillsMoreMenu'));

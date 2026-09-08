@@ -85,30 +85,70 @@ body {
   .phone-notch, .phone-home-bar { display: none; }
 }
 
-.app-page { padding: 52px 18px 24px; line-height: 1.4; -webkit-font-smoothing: antialiased; }
+.app-page { padding: 6px 18px 24px; line-height: 1.4; -webkit-font-smoothing: antialiased; }
 .app-page .wrap { max-width: 100%; margin: 0 auto; }
 
-/* ---------- header ---------- */
-.app-page .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 10px; }
-.app-page .icon-btn {
-  position: relative;
-  width: 36px; height: 36px; border-radius: 999px; background: var(--tile-btn);
-  border: none; display: flex; align-items: center; justify-content: center;
-  font-size: 15px; cursor: pointer; color: var(--ink); flex: 0 0 auto;
-  box-shadow: 0 1px 2px rgba(20,30,50,.06);
+/* ---------- screen header: sticky compact bar (.sh-bar) + large title (.sh-large)
+   that scrolls away underneath it. Both are direct children of .wrap (not a shared
+   wrapper) so the sticky bar's containing block spans the whole scrollable page —
+   nesting it inside a short header wrapper made it unstick as soon as that wrapper's
+   own (short) box scrolled past. ---------- */
+.app-page .sh-bar {
+  position: sticky; top: 0; z-index: 3;
+  display: flex; align-items: center; gap: 4px; min-height: 44px;
+  margin: 0 -18px; padding: 40px 18px 6px;
+  background: var(--bg);
+  transition: background-color .15s ease, box-shadow .15s ease;
 }
-.app-page .notify-dot {
-  position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%;
-  background: var(--urgent); border: 2px solid var(--bg);
+.phone-screen.is-scrolled .app-page .sh-bar {
+  background: rgba(245,246,247,.88); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: 0 1px 0 rgba(0,0,0,.08);
 }
-.app-page .notify-dot[hidden] { display: none; }
-.app-page .head-titles { text-align: left; flex: 1; }
-.app-page .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
-.app-page .head-titles h1 { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+.app-page .sh-inline-title {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, calc(-50% + 17px));
+  font-size: 15px; font-weight: 700; letter-spacing: -.01em; color: var(--ink);
+  opacity: 0; transition: opacity .15s ease; pointer-events: none;
+  max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.phone-screen.is-scrolled .app-page .sh-inline-title { opacity: 1; }
+.app-page .sh-actions { display: flex; align-items: center; gap: 0; margin-left: auto; }
+.app-page .sh-action {
+  position: relative; width: 44px; height: 44px; flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; padding: 0; margin: 0; cursor: pointer; color: var(--ink);
+}
+.app-page .sh-action[hidden] { display: none; }
+.app-page .sh-action svg { width: 22px; height: 22px; display: block; }
+.app-page .sh-action.is-primary { color: var(--action-blue-deep); }
+.app-page .sh-action .notify-dot { position: absolute; top: 9px; right: 9px; }
+.app-page .sh-large { padding: 8px 0 2px; margin-bottom: 18px; }
+.app-page .sh-title { font-size: 30px; font-weight: 700; letter-spacing: -.01em; line-height: 1.15; }
+.app-page .sh-subtitle { font-size: 13.5px; font-weight: 400; color: var(--muted); margin-top: 5px; }
+.app-page .sh-subtitle[hidden] { display: none; }
 
-/* ---------- brand row ---------- */
-.app-page .brand-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 10px; }
+/* ---------- shared header dropdowns (reminders panel, "Ще" menu) ---------- */
+.header-panel, .header-menu {
+  position: absolute; top: 46px; right: 18px; z-index: 4; width: 240px;
+  background: var(--card-surface-bg); border-radius: 20px; box-shadow: 0 16px 40px -12px rgba(20,30,50,.25);
+}
+.header-panel[hidden], .header-menu[hidden] { display: none; }
+.header-panel { padding: 14px; }
+.header-panel h2 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+.header-panel .hp-empty { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.header-panel .hp-item { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; border-top: 1px solid var(--border); }
+.header-panel .hp-item:first-child { border-top: none; padding-top: 0; }
+.header-panel .hp-item-title { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+.header-panel .hp-item-due { font-size: 11.5px; font-weight: 600; color: var(--urgent); }
+.header-menu { width: 220px; padding: 6px; display: flex; flex-direction: column; }
+.header-menu button {
+  font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ink); text-align: left;
+  background: none; border: none; padding: 11px 10px; border-radius: 12px; cursor: pointer;
+}
+.header-menu button:hover, .header-menu button:focus-visible { background: var(--tile); }
+
+/* ---------- brand logo (Profile header only) ---------- */
 .app-page .brand-logo {
+  display: block; margin-bottom: 8px;
   font-weight: 800; font-size: 26px; letter-spacing: -.02em; line-height: 1;
   background: var(--lime); -webkit-background-clip: text; background-clip: text; color: transparent;
 }

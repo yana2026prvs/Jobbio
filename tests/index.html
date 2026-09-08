@@ -198,10 +198,10 @@
         record('План: та сама задача знову "горить" після повернення в чергу', true);
       } catch (e) { record('План: та сама задача знову "горить" після повернення в чергу', false, e.message); }
 
-      // ---- notify bell badge ----
+      // ---- notify bell badge (bell lives only on the Plan header now) ----
       try {
         var dots = d.querySelectorAll('.notify-dot');
-        assert(dots.length === 4, 'дзвіночків=' + dots.length);
+        assert(dots.length === 1, 'дзвіночків=' + dots.length);
         assert(Array.from(dots).every(function (el) { return el.hidden === false; }), 'бейдж не показався при терміновій задачі');
         record('Дзвіночок: бейдж показується, коли є термінова задача', true);
       } catch (e) { record('Дзвіночок: бейдж показується, коли є термінова задача', false, e.message); }
@@ -250,9 +250,18 @@
 
       try {
         var dots = d.querySelectorAll('.notify-dot');
-        assert(Array.from(dots).every(function (el) { return el.hidden === false; }), 'бейдж не показався при простроченому відгуку');
-        record('Дзвіночок: бейдж показується і через прострочений відгук', true);
-      } catch (e) { record('Дзвіночок: бейдж показується і через прострочений відгук', false, e.message); }
+        assert(Array.from(dots).every(function (el) { return el.hidden === true; }), 'бейдж показався лише через прострочений (не сьогодні/завтра) відгук');
+        record('Дзвіночок: бейдж НЕ показується лише через прострочений відгук (тільки сьогодні/завтра)', true);
+      } catch (e) { record('Дзвіночок: бейдж НЕ показується лише через прострочений відгук (тільки сьогодні/завтра)', false, e.message); }
+
+      try {
+        var dateInput = appCard.querySelector('.app-deadline input[type="date"]');
+        dateInput.value = fmt(today);
+        dateInput.dispatchEvent(new w.Event('change', { bubbles: true }));
+        var dots = d.querySelectorAll('.notify-dot');
+        assert(Array.from(dots).every(function (el) { return el.hidden === false; }), 'бейдж не показався при дедлайні сьогодні');
+        record('Дзвіночок: бейдж показується при дедлайні сьогодні', true);
+      } catch (e) { record('Дзвіночок: бейдж показується при дедлайні сьогодні', false, e.message); }
 
       try {
         appCard.querySelector('.app-seg button[data-key="interview"]').click();
@@ -310,9 +319,9 @@
 
       try {
         var dots = d.querySelectorAll('.notify-dot');
-        assert(Array.from(dots).every(function (el) { return el.hidden === true; }), 'бейдж лишився видимим після видалення простроченого відгуку');
-        record('Дзвіночок: бейдж ховається після видалення простроченого відгуку', true);
-      } catch (e) { record('Дзвіночок: бейдж ховається після видалення простроченого відгуку', false, e.message); }
+        assert(Array.from(dots).every(function (el) { return el.hidden === true; }), 'бейдж лишився видимим після видалення відгуку з дедлайном сьогодні');
+        record('Дзвіночок: бейдж ховається після видалення відгуку з дедлайном сьогодні', true);
+      } catch (e) { record('Дзвіночок: бейдж ховається після видалення відгуку з дедлайном сьогодні', false, e.message); }
 
       // ---- sourceFromUrl ----
       try {

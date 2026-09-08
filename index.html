@@ -28,21 +28,30 @@
 <div class="phone-screen">
 <div id="plan" class="app-page">
   <div class="wrap">
-    <div class="brand-row">
-      <span class="brand-logo">Jobbio</span>
-      <button type="button" class="icon-btn notify-btn" aria-label="Термінові сповіщення">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" focusable="false">
-          <path d="M15.5 18C15.5 19.933 13.933 21.5 12 21.5C10.067 21.5 8.5 19.933 8.5 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M19.2311 18H4.76887C3.79195 18 3 17.208 3 16.2311C3 15.762 3.18636 15.3121 3.51809 14.9803L4.12132 14.3771C4.68393 13.8145 5 13.0514 5 12.2558V9.5C5 5.63401 8.13401 2.5 12 2.5C15.866 2.5 19 5.634 19 9.5V12.2558C19 13.0514 19.3161 13.8145 19.8787 14.3771L20.4819 14.9803C20.8136 15.3121 21 15.762 21 16.2311C21 17.208 20.208 18 19.2311 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="notify-dot" hidden></span>
-      </button>
-    </div>
-    <div class="topbar">
-      <div class="head-titles">
-        <p class="eyebrow">13 тижнів · продуктовий UI/UX</p>
-        <h1>План виходу на ринок праці</h1>
+    <div class="sh-bar">
+      <span class="sh-inline-title">План</span>
+      <div class="sh-actions">
+        <button type="button" class="sh-action is-primary" id="planAddTaskBtn" aria-label="Додати задачу">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button type="button" class="sh-action notify-btn" id="remindersBtn" aria-label="Нагадування" aria-haspopup="true" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <path d="M15.5 18C15.5 19.933 13.933 21.5 12 21.5C10.067 21.5 8.5 19.933 8.5 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M19.2311 18H4.76887C3.79195 18 3 17.208 3 16.2311C3 15.762 3.18636 15.3121 3.51809 14.9803L4.12132 14.3771C4.68393 13.8145 5 13.0514 5 12.2558V9.5C5 5.63401 8.13401 2.5 12 2.5C15.866 2.5 19 5.634 19 9.5V12.2558C19 13.0514 19.3161 13.8145 19.8787 14.3771L20.4819 14.9803C20.8136 15.3121 21 15.762 21 16.2311C21 17.208 20.208 18 19.2311 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="notify-dot" hidden></span>
+        </button>
       </div>
+      <div class="header-panel" id="remindersPanel" hidden>
+        <h2>Нагадування</h2>
+        <div id="remindersBody"></div>
+      </div>
+    </div>
+    <div class="sh-large">
+      <h1 class="sh-title">План виходу на ринок праці</h1>
+      <p class="sh-subtitle" id="planSubtitle"></p>
     </div>
 
     <div class="cal-strip" id="deadlineCalendar" role="group" aria-label="Календар дедлайнів"></div>
@@ -66,21 +75,19 @@
 
 <div id="apps" class="app-page" hidden>
   <div class="wrap">
-    <div class="brand-row">
-      <span class="brand-logo">Jobbio</span>
-      <button type="button" class="icon-btn notify-btn" aria-label="Термінові сповіщення">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" focusable="false">
-          <path d="M15.5 18C15.5 19.933 13.933 21.5 12 21.5C10.067 21.5 8.5 19.933 8.5 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M19.2311 18H4.76887C3.79195 18 3 17.208 3 16.2311C3 15.762 3.18636 15.3121 3.51809 14.9803L4.12132 14.3771C4.68393 13.8145 5 13.0514 5 12.2558V9.5C5 5.63401 8.13401 2.5 12 2.5C15.866 2.5 19 5.634 19 9.5V12.2558C19 13.0514 19.3161 13.8145 19.8787 14.3771L20.4819 14.9803C20.8136 15.3121 21 15.762 21 16.2311C21 17.208 20.208 18 19.2311 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="notify-dot" hidden></span>
-      </button>
-    </div>
-    <div class="topbar">
-      <div class="head-titles">
-        <p class="eyebrow">Пошук на повну</p>
-        <h1>Відгуки на вакансії</h1>
+    <div class="sh-bar">
+      <span class="sh-inline-title">Відгуки</span>
+      <div class="sh-actions">
+        <button type="button" class="sh-action is-primary" id="appAddHeaderBtn" aria-label="Додати відгук">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
       </div>
+    </div>
+    <div class="sh-large">
+      <h1 class="sh-title">Відгуки</h1>
+      <p class="sh-subtitle" id="appsSubtitle"></p>
     </div>
 
     <div class="funnel" id="appsFunnel"></div>
@@ -117,30 +124,30 @@
 
 <div id="skills" class="app-page" hidden>
   <div class="wrap">
-    <div class="brand-row">
-      <span class="brand-logo">Jobbio</span>
-      <div class="topbar-actions">
-        <button type="button" class="icon-btn" id="learningPlanOpenBtn" aria-label="Плани навчання">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" focusable="false">
-            <path d="M12 3L3 8L12 13L21 8L12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-            <path d="M3 12L12 17L21 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M3 16L12 21L21 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <div class="sh-bar">
+      <span class="sh-inline-title">Навички</span>
+      <div class="sh-actions">
+        <button type="button" class="sh-action is-primary" id="skillsRefreshBtn" aria-label="Оновити аналіз за вакансіями">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <path d="M20 12a8 8 0 10-2.34 5.66M20 12v-5M20 12h-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <button type="button" class="icon-btn notify-btn" aria-label="Термінові сповіщення">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" focusable="false">
-            <path d="M15.5 18C15.5 19.933 13.933 21.5 12 21.5C10.067 21.5 8.5 19.933 8.5 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M19.2311 18H4.76887C3.79195 18 3 17.208 3 16.2311C3 15.762 3.18636 15.3121 3.51809 14.9803L4.12132 14.3771C4.68393 13.8145 5 13.0514 5 12.2558V9.5C5 5.63401 8.13401 2.5 12 2.5C15.866 2.5 19 5.634 19 9.5V12.2558C19 13.0514 19.3161 13.8145 19.8787 14.3771L20.4819 14.9803C20.8136 15.3121 21 15.762 21 16.2311C21 17.208 20.208 18 19.2311 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <button type="button" class="sh-action" id="skillsMoreBtn" aria-label="Ще" aria-haspopup="true" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <circle cx="5" cy="12" r="1.6" fill="currentColor"/>
+            <circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+            <circle cx="19" cy="12" r="1.6" fill="currentColor"/>
           </svg>
-          <span class="notify-dot" hidden></span>
         </button>
+      </div>
+      <div class="header-menu" id="skillsMoreMenu" hidden>
+        <button type="button" id="skillsReplacePlanItem">Замінити план навчання</button>
+        <button type="button" id="skillsExportAnalysisItem">Експортувати аналіз</button>
       </div>
     </div>
-    <div class="topbar">
-      <div class="head-titles">
-        <p class="eyebrow" id="skillsEyebrow">На основі 7 вакансій</p>
-        <h1 id="skillsTitle">Навички і скіли</h1>
-      </div>
+    <div class="sh-large">
+      <h1 class="sh-title" id="skillsTitle"></h1>
+      <p class="sh-subtitle" id="skillsSubtitle"></p>
     </div>
 
     <div id="skillsDefaultView">
@@ -166,21 +173,20 @@
 
 <div id="profile" class="app-page" hidden>
   <div class="wrap">
-    <div class="brand-row">
-      <span class="brand-logo">Jobbio</span>
-      <button type="button" class="icon-btn notify-btn" aria-label="Термінові сповіщення">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" focusable="false">
-          <path d="M15.5 18C15.5 19.933 13.933 21.5 12 21.5C10.067 21.5 8.5 19.933 8.5 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M19.2311 18H4.76887C3.79195 18 3 17.208 3 16.2311C3 15.762 3.18636 15.3121 3.51809 14.9803L4.12132 14.3771C4.68393 13.8145 5 13.0514 5 12.2558V9.5C5 5.63401 8.13401 2.5 12 2.5C15.866 2.5 19 5.634 19 9.5V12.2558C19 13.0514 19.3161 13.8145 19.8787 14.3771L20.4819 14.9803C20.8136 15.3121 21 15.762 21 16.2311C21 17.208 20.208 18 19.2311 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="notify-dot" hidden></span>
-      </button>
-    </div>
-    <div class="topbar">
-      <div class="head-titles">
-        <p class="eyebrow">Особистий кабінет</p>
-        <h1>Профіль</h1>
+    <div class="sh-bar">
+      <span class="sh-inline-title">Профіль</span>
+      <div class="sh-actions">
+        <button type="button" class="sh-action is-primary" id="profileSaveBtn" aria-label="Зберегти" hidden>
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <path d="M5 12.5L10 17.5L19 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
+    </div>
+    <div class="sh-large">
+      <span class="brand-logo">Jobbio</span>
+      <h1 class="sh-title">Профіль</h1>
+      <p class="sh-subtitle" id="profileSubtitle" hidden></p>
     </div>
 
     <div class="profile-card">
@@ -285,6 +291,7 @@
 </div>
 
 <script src="js/utils.js"></script>
+<script src="js/header.js"></script>
 <script src="js/plan-data.js"></script>
 <script src="js/plan.js"></script>
 <script src="js/learning-plan.js"></script>

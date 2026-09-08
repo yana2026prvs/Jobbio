@@ -1,4 +1,4 @@
-const CACHE = 'job-plan-v3';
+const CACHE = 'job-plan-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const ASSETS = [
   './css/profile.css',
   './css/plan-sheet.css',
   './js/utils.js',
+  './js/header.js',
   './js/plan-data.js',
   './js/plan.js',
   './js/learning-plan.js',

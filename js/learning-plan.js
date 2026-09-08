@@ -33,7 +33,7 @@ function isDefaultLearningPlan() { return activeLearningPlanId === 'default'; }
 
 function getActiveLearningPlan() {
   if (activeLearningPlanId === 'default') {
-    return { id: 'default', name: 'Навички і скіли', eyebrow: 'На основі 7 вакансій', isDefault: true };
+    return { id: 'default', name: 'Навички', eyebrow: 'На основі 7 вакансій', isDefault: true };
   }
   var plan = learningPlans.filter(function (p) { return p.id === activeLearningPlanId; })[0];
   if (!plan) { activeLearningPlanId = 'default'; return getActiveLearningPlan(); }
@@ -49,7 +49,9 @@ function getActiveLearningPlan() {
 function renderSkillsHeader() {
   var active = getActiveLearningPlan();
   document.getElementById('skillsTitle').textContent = active.name;
-  document.getElementById('skillsEyebrow').textContent = active.eyebrow;
+  var subtitle = active.eyebrow;
+  if (active.isDefault) subtitle += ' · оновлено ' + formatUaDateShort(getSkillsAnalysisUpdated());
+  document.getElementById('skillsSubtitle').textContent = subtitle;
 }
 
 /* ---------- plan import: turn an uploaded/pasted roadmap into plan data ---------- */
@@ -459,7 +461,6 @@ function openPlanSheet() {
 }
 function closePlanSheet() { planSheetOverlay.hidden = true; }
 
-document.getElementById('learningPlanOpenBtn').addEventListener('click', openPlanSheet);
 document.getElementById('planSheetClose').addEventListener('click', closePlanSheet);
 planSheetOverlay.addEventListener('click', function (e) { if (e.target === planSheetOverlay) closePlanSheet(); });
 

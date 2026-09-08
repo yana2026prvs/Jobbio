@@ -40,28 +40,86 @@ function deadlineInfo(dateStr) {
   return { urgent: diffDays <= 2, text: text };
 }
 
-function updateNotifyDot() {
-  var hasUrgent = false;
+/* Stricter than deadlineInfo().urgent (which also covers overdue and "+2 days",
+   used for the 🔥 chips): the bell badge and reminders panel only care about
+   deadlines due today or tomorrow. */
+function isDueTodayOrTomorrow(dateStr) {
+  if (!dateStr) return false;
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var d = new Date(dateStr + 'T00:00:00');
+  var diffDays = Math.round((d - today) / 86400000);
+  return diffDays === 0 || diffDays === 1;
+}
+
+function collectReminders() {
+  var items = [];
   ALL_TASKS.forEach(function (t) {
-    if (hasUrgent || getStatus(t.id) === 'done') return;
-    var info = deadlineInfo(deadlines[t.id]);
-    if (info && info.urgent) hasUrgent = true;
+    if (getStatus(t.id) === 'done') return;
+    var dl = deadlines[t.id];
+    if (isDueTodayOrTomorrow(dl)) items.push({ title: t.title, text: deadlineInfo(dl).text });
   });
-  if (!hasUrgent) {
-    apps.forEach(function (a) {
-      if (hasUrgent) return;
-      var info = deadlineInfo(a.deadline);
-      if (info && info.urgent) hasUrgent = true;
-    });
-  }
-  if (!hasUrgent && !isDefaultLearningPlan()) {
+  apps.forEach(function (a) {
+    if (isDueTodayOrTomorrow(a.deadline)) items.push({ title: a.company, text: deadlineInfo(a.deadline).text });
+  });
+  if (!isDefaultLearningPlan()) {
     getActiveLearningPlan().allTasks.forEach(function (t) {
-      if (hasUrgent || getLearningStatus(t.id) === 'done') return;
-      var info = deadlineInfo(learningDeadlines[learningPlanKey(t.id)]);
-      if (info && info.urgent) hasUrgent = true;
+      if (getLearningStatus(t.id) === 'done') return;
+      var dl = learningDeadlines[learningPlanKey(t.id)];
+      if (isDueTodayOrTomorrow(dl)) items.push({ title: t.title, text: deadlineInfo(dl).text });
     });
   }
+  return items;
+}
+
+function updateNotifyDot() {
+  var hasUrgent = collectReminders().length > 0;
   document.querySelectorAll('.notify-dot').forEach(function (dot) { dot.hidden = !hasUrgent; });
+}
+
+function renderRemindersPanel() {
+  var body = document.getElementById('remindersBody');
+  if (!body) return;
+  var items = collectReminders();
+  body.innerHTML = '';
+  if (!items.length) {
+    var empty = document.createElement('p');
+    empty.className = 'hp-empty';
+    empty.textContent = 'Нагадувань немає. Постав дедлайн у задачі — нагадаю за день до нього.';
+    body.appendChild(empty);
+    return;
+  }
+  items.forEach(function (item) {
+    var row = document.createElement('div');
+    row.className = 'hp-item';
+    var title = document.createElement('span');
+    title.className = 'hp-item-title';
+    title.textContent = item.title;
+    var due = document.createElement('span');
+    due.className = 'hp-item-due';
+    due.textContent = item.text;
+    row.appendChild(title);
+    row.appendChild(due);
+    body.appendChild(row);
+  });
+}
+
+var remindersBtnEl = document.getElementById('remindersBtn');
+var remindersPanelEl = document.getElementById('remindersPanel');
+setupHeaderPanel(remindersBtnEl, remindersPanelEl, renderRemindersPanel);
+
+function planCurrentWeekNumber() {
+  var nextTask = ALL_TASKS.filter(function (t) { return getStatus(t.id) !== 'done'; })[0];
+  var block = nextTask
+    ? WEEKBLOCKS.filter(function (b) { return b.tasks.indexOf(nextTask) !== -1; })[0]
+    : WEEKBLOCKS[WEEKBLOCKS.length - 1];
+  var match = block && block.label.match(/\d+/);
+  return match ? Number(match[0]) : 1;
+}
+
+function renderPlanHeader() {
+  var subtitle = document.getElementById('planSubtitle');
+  if (!subtitle) return;
+  subtitle.textContent = 'Тиждень ' + planCurrentWeekNumber() + ' з ' + PLAN_TOTAL_WEEKS + ' · ' + PLAN_TRACK_LABEL;
 }
 
 var state = {};
@@ -77,7 +135,7 @@ function savePlanState() {
 function getStatus(id) { return state[id] || 'queue'; }
 function setStatus(id, s) {
   state[id] = s; savePlanState(); updateNotifyDot();
-  renderCalendar(); renderHeroCard(); applyStatusFilter();
+  renderCalendar(); renderHeroCard(); applyStatusFilter(); renderPlanHeader();
 }
 var jobStore = {
   getStatus: getStatus,
