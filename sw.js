@@ -1,4 +1,4 @@
-const CACHE = 'job-plan-v5';
+const CACHE = 'job-plan-v6';
 const ASSETS = [
   './',
   './index.html',

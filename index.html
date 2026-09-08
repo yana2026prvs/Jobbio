@@ -63,9 +63,16 @@
       <p class="empty-fineprint">Дані зберігаються тільки в цьому браузері</p>
     </div>
 
-    <div class="cal-strip" id="deadlineCalendar" role="group" aria-label="Календар дедлайнів"></div>
+    <div class="today-block" id="todayBlock" hidden>
+      <h2 class="section-head">Сьогодні</h2>
+      <div class="task-list" id="todayList" hidden></div>
+      <p class="today-empty" id="todayEmpty"></p>
+    </div>
 
     <div class="hero-card" id="heroCard"></div>
+
+    <h2 class="section-head" id="deadlinesSectionHead" hidden>Дедлайни</h2>
+    <div class="cal-strip" id="deadlineCalendar" role="group" aria-label="Календар дедлайнів"></div>
 
     <div class="quick-filter" id="statusFilter" role="group" aria-label="Фільтр задач за статусом">
       <button type="button" data-key="all" aria-pressed="true">Всі</button>

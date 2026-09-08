@@ -13,6 +13,7 @@ loadLearningDeadlines();
 loadPlanState();
 loadDeadlines();
 loadPlanActiveId();
+renderTodayBlock();
 renderBoard();
 renderCalendar();
 renderHeroCard();

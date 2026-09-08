@@ -267,7 +267,11 @@ function saveLearningState() {
   try { localStorage.setItem(LEARNING_STATE_KEY, JSON.stringify(learningState)); } catch (e) {}
 }
 function getLearningStatus(id) { return learningState[learningPlanKey(id)] || 'queue'; }
-function setLearningStatus(id, s) { learningState[learningPlanKey(id)] = s; saveLearningState(); renderLearningOverview(); updateNotifyDot(); }
+function setLearningStatus(id, s) {
+  learningState[learningPlanKey(id)] = s; saveLearningState(); renderLearningOverview(); updateNotifyDot();
+  // A custom plan can also be the Plan tab's active plan (js/plan.js) — keep it in sync too.
+  renderCalendar(); renderHeroCard(); applyStatusFilter(); renderPlanHeader(); renderTodayBlock();
+}
 
 var LEARNING_DEADLINES_KEY = 'job-learning-plan-deadlines-v1';
 var learningDeadlines = {};
@@ -280,6 +284,7 @@ function loadLearningDeadlines() {
 function saveLearningDeadlines() {
   try { localStorage.setItem(LEARNING_DEADLINES_KEY, JSON.stringify(learningDeadlines)); } catch (e) {}
   updateNotifyDot();
+  renderCalendar(); renderTodayBlock();
 }
 
 var learningStore = {

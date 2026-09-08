@@ -95,17 +95,7 @@ function renderSkills() {
 
 /* ---------- header: "оновлено {дата}" timestamp for the default analysis ---------- */
 var SKILLS_ANALYSIS_UPDATED_KEY = 'job-skills-analysis-updated-v1';
-var UA_MONTHS_GENITIVE = ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня',
-  'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'];
 
-function todayDateStr() {
-  var d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-}
-function formatUaDateShort(dateStr) {
-  var d = new Date(dateStr + 'T00:00:00');
-  return d.getDate() + ' ' + UA_MONTHS_GENITIVE[d.getMonth()];
-}
 function getSkillsAnalysisUpdated() {
   var stored;
   try { stored = localStorage.getItem(SKILLS_ANALYSIS_UPDATED_KEY); } catch (e) { stored = null; }

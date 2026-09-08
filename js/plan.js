@@ -1,7 +1,11 @@
-/* Plan page: task statuses/deadlines, the phase/week/task board, the deadline
-   calendar and hero summary card, and the status quick-filter.
-   Depends on: js/utils.js (escapeHtml, truncateText), js/plan-data.js (WEEKBLOCKS,
-   PHASE_ORDER, PHASE_SPANS, ALL_TASKS).
+/* Plan page: which plan is active (builtin vs. a shared uploaded plan vs. empty),
+   task statuses/deadlines, the "Сьогодні" block, the collapsible phase/week/task
+   board, the deadline calendar and hero summary card, and the status quick-filter
+   (with counts).
+   Depends on: js/utils.js (escapeHtml, truncateText, pluralize, UA_MONTHS_GENITIVE,
+   formatUaDateShort), js/plan-data.js (WEEKBLOCKS, PHASE_ORDER, PHASE_SPANS,
+   ALL_TASKS), js/learning-plan.js (learningPlans/learningStore, for a non-builtin
+   active plan).
    taskEl()/getStatus()-shaped "store" objects are also used by js/learning-plan.js
    to render the learning-plan board with the same card markup. */
 
@@ -25,6 +29,7 @@ function saveDeadlines() {
   try { localStorage.setItem(DEADLINES_KEY, JSON.stringify(deadlines)); } catch (e) {}
   updateNotifyDot();
   renderCalendar();
+  renderTodayBlock();
 }
 
 /* ---------- active plan on the Plan tab: 'builtin' (the fixed 13-week WEEKBLOCKS,
@@ -50,11 +55,57 @@ function loadPlanActiveId() {
   planActiveId = stored;
 }
 function setPlanActiveId(id) {
+  if (id !== planActiveId) {
+    try { localStorage.setItem(PLAN_START_DATE_KEY, todayDateStr()); } catch (e) {}
+  }
   planActiveId = id;
   try { localStorage.setItem(PLAN_ACTIVE_KEY, id); } catch (e) {}
 }
 function isPlanBuiltin() { return planActiveId === 'builtin'; }
 function isPlanEmpty() { return planActiveId === 'none'; }
+
+/* Index (0-based) of the week-block holding the next not-done task — the week
+   in view by default, and the anchor for the start-date guess below. Falls
+   back to the last block once everything is done. */
+function currentBlockIndex(meta) {
+  if (!meta.weekblocks.length) return 0;
+  var nextTask = meta.allTasks.filter(function (t) { return meta.store.getStatus(t.id) !== 'done'; })[0];
+  if (!nextTask) return meta.weekblocks.length - 1;
+  var idx = -1;
+  meta.weekblocks.some(function (b, i) { if (b.tasks.indexOf(nextTask) !== -1) { idx = i; return true; } return false; });
+  return idx === -1 ? 0 : idx;
+}
+
+/* When did "week 1" of the currently active plan start? Not something the app
+   tracks explicitly — inferred once, then kept stable: picked so that today
+   falls inside whichever week currentBlockIndex() says is "current" (so an
+   existing user with real progress gets a sensible date range immediately,
+   not a range starting today for a week they finished weeks ago). Reset to
+   today whenever the active plan changes (js/plan.js setPlanActiveId). */
+var PLAN_START_DATE_KEY = 'job-plan-start-date-v1';
+function getPlanStartDate() {
+  var stored;
+  try { stored = localStorage.getItem(PLAN_START_DATE_KEY); } catch (e) { stored = null; }
+  if (!stored) {
+    var idx = isPlanEmpty() ? 0 : currentBlockIndex(currentPlanMeta());
+    var d = new Date(); d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - idx * 7);
+    stored = toDateStr(d);
+    try { localStorage.setItem(PLAN_START_DATE_KEY, stored); } catch (e) {}
+  }
+  return stored;
+}
+
+function weekDateRangeLabel(blockIndex) {
+  var start = new Date(getPlanStartDate() + 'T00:00:00');
+  start.setDate(start.getDate() + blockIndex * 7);
+  var end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  if (start.getMonth() === end.getMonth()) {
+    return start.getDate() + '-' + end.getDate() + ' ' + UA_MONTHS_GENITIVE[start.getMonth()];
+  }
+  return start.getDate() + ' ' + UA_MONTHS_GENITIVE[start.getMonth()] + ' - ' + end.getDate() + ' ' + UA_MONTHS_GENITIVE[end.getMonth()];
+}
 
 /* Resolves what the Plan tab should currently render: the builtin job-search plan,
    or one of the shared custom plans, with a uniform {weekblocks, allTasks, store}
@@ -202,7 +253,7 @@ function savePlanState() {
 function getStatus(id) { return state[id] || 'queue'; }
 function setStatus(id, s) {
   state[id] = s; savePlanState(); updateNotifyDot();
-  renderCalendar(); renderHeroCard(); applyStatusFilter(); renderPlanHeader();
+  renderCalendar(); renderHeroCard(); applyStatusFilter(); renderPlanHeader(); renderTodayBlock();
 }
 var jobStore = {
   getStatus: getStatus,
@@ -369,11 +420,15 @@ function taskEl(t, store) {
   return el;
 }
 
+var WK_CHEVRON_SVG = '<svg class="wk-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
+  '<path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
 function renderBoard() {
   var board = document.getElementById('board');
   board.innerHTML = '';
   if (isPlanEmpty()) return;
   var meta = currentPlanMeta();
+  var expandedIndex = currentBlockIndex(meta);
   var lastPhase = null;
   meta.weekblocks.forEach(function (block, blockIndex) {
     if (block.phase !== lastPhase) {
@@ -393,12 +448,31 @@ function renderBoard() {
     var wrap = document.createElement('div');
     wrap.className = 'week-block';
     wrap.dataset.blockIndex = String(blockIndex);
-    var h2 = document.createElement('h2');
-    h2.textContent = block.label;
-    wrap.appendChild(h2);
+    var collapsed = blockIndex !== expandedIndex;
+    wrap.classList.toggle('is-collapsed', collapsed);
+
     var list = document.createElement('div');
     list.className = 'task-list';
+    list.hidden = collapsed;
     block.tasks.forEach(function (t) { list.appendChild(taskEl(t, meta.store)); });
+
+    var toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'week-toggle';
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    var weekName = block.label.split(' — ')[0];
+    var doneCount = block.tasks.filter(function (t) { return meta.store.getStatus(t.id) === 'done'; }).length;
+    toggle.innerHTML =
+      '<span class="wk-title">' + escapeHtml(weekName) + ' · ' + escapeHtml(weekDateRangeLabel(blockIndex)) + '</span>' +
+      '<span class="wk-right"><span class="wk-count">' + doneCount + '/' + block.tasks.length + '</span>' + WK_CHEVRON_SVG + '</span>';
+    toggle.addEventListener('click', function () {
+      var nowCollapsed = !wrap.classList.contains('is-collapsed');
+      wrap.classList.toggle('is-collapsed', nowCollapsed);
+      list.hidden = nowCollapsed;
+      toggle.setAttribute('aria-expanded', String(!nowCollapsed));
+    });
+
+    wrap.appendChild(toggle);
     wrap.appendChild(list);
     board.appendChild(wrap);
   });
@@ -434,11 +508,15 @@ function scrollToDeadlineDate(dateStr) {
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+var WEEKDAY_SHORT = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+
 function renderCalendar() {
   var cal = document.getElementById('deadlineCalendar');
+  var sectionHead = document.getElementById('deadlinesSectionHead');
   if (!cal) return;
   cal.innerHTML = '';
   cal.hidden = isPlanEmpty();
+  if (sectionHead) sectionHead.hidden = isPlanEmpty();
   if (isPlanEmpty()) return;
 
   var today = new Date(); today.setHours(0, 0, 0, 0);
@@ -468,8 +546,10 @@ function renderCalendar() {
     btn.className = 'cal-day';
     if (isToday) btn.dataset.today = 'true';
     if (state) btn.dataset.deadline = state;
-    var monthLabel = d.getDate() === 1 ? '<span class="cal-month">' + MONTH_SHORT[d.getMonth()] + '</span>' : '';
-    btn.innerHTML = monthLabel + '<span class="cal-num">' + d.getDate() + '</span>' +
+    var topLabel = d.getDate() === 1
+      ? '<span class="cal-month">' + MONTH_SHORT[d.getMonth()] + '</span>'
+      : '<span class="cal-weekday">' + WEEKDAY_SHORT[d.getDay()] + '</span>';
+    btn.innerHTML = topLabel + '<span class="cal-num">' + d.getDate() + '</span>' +
       '<span class="cal-badge">' + (state === 'resolved' ? '✓' : '') + '</span>';
     var label = dateStr;
     if (isToday) label += ', сьогодні';
@@ -507,6 +587,10 @@ function renderHeroCard() {
     ticks += '<span class="hc-tick' + (i < done ? ' is-filled' : '') + '"></span>';
   }
 
+  var caption = isPlanBuiltin()
+    ? 'Тиждень ' + planCurrentWeekNumber() + ' з ' + PLAN_TOTAL_WEEKS + ' · ' + pct + '% задач готово'
+    : 'Розділ ' + (currentBlockIndex(meta) + 1) + ' з ' + meta.weekblocks.length + ' · ' + pct + '% задач готово';
+
   hero.innerHTML =
     '<div class="hc-top">' +
       '<div class="hc-row"><span class="hc-label">Ціль</span><span class="hc-value">' +
@@ -518,11 +602,23 @@ function renderHeroCard() {
       '<span class="hc-pct">' + pct + '%</span>' +
       '<span class="hc-status"><b>В процесі</b><span>' + done + ' з ' + total + ' задач</span></span>' +
     '</div>' +
+    '<div class="hc-caption">' + escapeHtml(caption) + '</div>' +
     '<div class="hc-ticks">' + ticks + '</div>';
 }
 
 var STATUS_FILTER = 'all';
-var FILTER_LABELS = { queue: 'В черзі', doing: 'В роботі', done: 'Готово' };
+var FILTER_LABELS = { all: 'Всі', queue: 'В черзі', doing: 'В роботі', done: 'Готово' };
+
+function updateFilterCounts() {
+  var filterWrap = document.getElementById('statusFilter');
+  if (!filterWrap || isPlanEmpty()) return;
+  var meta = currentPlanMeta();
+  var counts = { all: meta.allTasks.length, queue: 0, doing: 0, done: 0 };
+  meta.allTasks.forEach(function (t) { counts[meta.store.getStatus(t.id)]++; });
+  filterWrap.querySelectorAll('button').forEach(function (b) {
+    b.textContent = FILTER_LABELS[b.dataset.key] + ' ' + counts[b.dataset.key];
+  });
+}
 
 function applyStatusFilter() {
   var board = document.getElementById('board');
@@ -532,6 +628,7 @@ function applyStatusFilter() {
   if (!board) return;
   board.hidden = isPlanEmpty();
   if (isPlanEmpty()) { if (emptyMsg) emptyMsg.hidden = true; return; }
+  updateFilterCounts();
 
   board.querySelectorAll('.task').forEach(function (task) {
     task.hidden = STATUS_FILTER !== 'all' && task.dataset.status !== STATUS_FILTER;
@@ -551,6 +648,15 @@ function applyStatusFilter() {
       el.querySelectorAll('.task').forEach(function (t) { if (!t.hidden) { visible = true; anyVisible = true; } });
       el.hidden = !visible;
       if (visible) phaseHasVisible = true;
+      // Filtering to a specific status always shows matching weeks' contents,
+      // regardless of their collapsed/expanded state — that state only applies
+      // when the "Всі" filter is active.
+      var list = el.querySelector('.task-list');
+      var toggle = el.querySelector('.week-toggle');
+      if (list) {
+        list.hidden = STATUS_FILTER === 'all' ? el.classList.contains('is-collapsed') : false;
+        if (toggle) toggle.setAttribute('aria-expanded', String(!list.hidden));
+      }
     }
   });
   if (currentPhaseHead) currentPhaseHead.hidden = !phaseHasVisible;
@@ -564,6 +670,47 @@ function applyStatusFilter() {
     }
   }
   board.hidden = showFilterEmpty;
+}
+
+/* ---------- "Сьогодні" block ---------- */
+function nearestUpcomingDeadline(meta) {
+  var todayStr = toDateStr(new Date());
+  var dates = meta.allTasks
+    .filter(function (t) { return meta.store.getStatus(t.id) !== 'done'; })
+    .map(function (t) { return meta.store.getDeadline(t.id); })
+    .filter(function (d) { return d && d >= todayStr; });
+  if (!dates.length) return null;
+  dates.sort();
+  return dates[0];
+}
+
+function renderTodayBlock() {
+  var wrap = document.getElementById('todayBlock');
+  var list = document.getElementById('todayList');
+  var empty = document.getElementById('todayEmpty');
+  if (!wrap) return;
+  wrap.hidden = isPlanEmpty();
+  if (isPlanEmpty()) return;
+
+  var meta = currentPlanMeta();
+  var todayStr = toDateStr(new Date());
+  var todayTasks = meta.allTasks.filter(function (t) {
+    return meta.store.getStatus(t.id) !== 'done' && meta.store.getDeadline(t.id) === todayStr;
+  }).slice(0, 3);
+
+  list.innerHTML = '';
+  if (!todayTasks.length) {
+    list.hidden = true;
+    empty.hidden = false;
+    var nearest = nearestUpcomingDeadline(meta);
+    empty.textContent = nearest
+      ? 'На сьогодні задач немає. Найближчий дедлайн — ' + formatUaDateShort(nearest) + '.'
+      : 'На сьогодні задач немає.';
+    return;
+  }
+  empty.hidden = true;
+  list.hidden = false;
+  todayTasks.forEach(function (t) { list.appendChild(taskEl(t, meta.store)); });
 }
 
 var statusFilterEl = document.getElementById('statusFilter');
@@ -593,6 +740,7 @@ if (boardFilterEmptyShowAllBtn) {
 
 /* ---------- empty state (first launch, no active plan yet) ---------- */
 function refreshPlanTab() {
+  renderTodayBlock();
   renderBoard();
   renderCalendar();
   renderHeroCard();

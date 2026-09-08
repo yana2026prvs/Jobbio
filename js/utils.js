@@ -14,3 +14,15 @@ function pluralize(n, forms) {
   if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return forms[1];
   return forms[2];
 }
+
+var UA_MONTHS_GENITIVE = ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня',
+  'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'];
+
+function todayDateStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function formatUaDateShort(dateStr) {
+  var d = new Date(dateStr + 'T00:00:00');
+  return d.getDate() + ' ' + UA_MONTHS_GENITIVE[d.getMonth()];
+}
