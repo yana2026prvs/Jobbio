@@ -43,3 +43,7 @@ Object.keys(profileFields).forEach(function (key) {
   });
 });
 document.getElementById('profileForm').addEventListener('submit', function (e) { e.preventDefault(); });
+
+document.getElementById('profileReplacePlanBtn').addEventListener('click', function () {
+  openPlanSheet('skills', true);
+});

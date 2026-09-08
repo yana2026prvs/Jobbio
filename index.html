@@ -241,6 +241,11 @@
       </form>
     </div>
 
+    <div class="profile-section">
+      <h2>План навчання</h2>
+      <button type="button" class="add-btn" id="profileReplacePlanBtn">Замінити план навчання</button>
+    </div>
+
     <div class="foot">
       <span>Дані зберігаються автоматично в цьому браузері</span>
     </div>
@@ -285,7 +290,7 @@
 <div class="sheet-overlay" id="planSheetOverlay" hidden>
   <div class="sheet" id="planSheet">
     <div class="sheet-head">
-      <h2>Плани навчання</h2>
+      <h2 id="planSheetTitle">Плани навчання</h2>
       <button type="button" class="sheet-close" id="planSheetClose" aria-label="Закрити">✕</button>
     </div>
 
@@ -294,27 +299,32 @@
     <button type="button" class="add-btn" id="planUploadToggle">+ Завантажити план навчання</button>
 
     <div class="add-form" id="planUploadForm" hidden>
-      <p class="plan-hint">Завантаж .docx/.txt/.md зі своїм roadmap розвитку — з чіткими заголовками тижнів/розділів (наприклад, "Тиждень 1 — ..." або "## Week 1"). Застосунок сам розкладе його на фази, тижні й задачі з чекбоксами прогресу.</p>
+      <p class="plan-hint">Підійде файл, де тижні або розділи виділені заголовками — наприклад «Тиждень 1» або «Модуль 1: Дослідження».</p>
       <div class="add-field">
-        <label for="planFile">Файл (.docx, .txt, .md)</label>
-        <input type="file" id="planFile" accept=".docx,.txt,.md,text/plain,text/markdown">
+        <input type="file" id="planFile" accept=".docx,.txt,.md,text/plain,text/markdown" hidden>
+        <button type="button" class="plan-file-btn" id="planFileBtn">Обрати файл (.docx, .txt, .md)</button>
+        <span class="plan-file-name" id="planFileName" hidden></span>
       </div>
-      <p class="plan-or">— або —</p>
+      <p class="plan-or">або</p>
       <div class="add-field">
         <label for="planPasteText">Вставити текст плану</label>
         <textarea id="planPasteText" placeholder="Встав сюди текст свого roadmap"></textarea>
       </div>
       <div class="add-field">
         <label for="planName">Назва плану (необов'язково)</label>
-        <input type="text" id="planName" placeholder="Наприклад, UI/UX Junior → Middle">
+        <input type="text" id="planName" placeholder="UI/UX: junior → middle">
       </div>
       <p class="plan-status" id="planParseStatus" hidden></p>
       <div class="add-actions">
         <button type="button" class="add-cancel" id="planUploadCancel">Скасувати</button>
-        <button type="button" class="add-save" id="planUploadSave">Розібрати і зберегти</button>
+        <button type="button" class="add-save" id="planUploadSave">Розібрати план</button>
       </div>
     </div>
   </div>
+</div>
+<div class="toast" id="toast" hidden role="status" aria-live="polite">
+  <span class="toast-msg" id="toastMsg"></span>
+  <button type="button" class="toast-action" id="toastAction" hidden></button>
 </div>
 <div class="phone-home-bar" aria-hidden="true"></div>
 </div>

@@ -66,7 +66,7 @@ python3 -m http.server 8000
 │   └── plan-sheet.css           # bottom sheet перемикача/завантаження планів навчання
 ├── js/
 │   ├── utils.js            # escapeHtml/truncateText/pluralize — завантажується першим
-│   ├── header.js            # спільний screen-header chrome: sticky-скрол компактного бару, дропдауни (нагадування/"Ще") — без залежностей, тому завантажується другим, одразу після utils.js
+│   ├── header.js            # спільний screen-header chrome: sticky-скрол компактного бару, дропдауни (нагадування/"Ще"), тост (showToast) — без залежностей, тому завантажується другим, одразу після utils.js
 │   ├── plan-data.js         # статичні дані 13-тижневого плану (WEEKBLOCKS/ALL_TASKS)
 │   ├── plan.js                # статуси/дедлайни плану, taskEl(), дошка/огляд/календар/hero, notify-дзвіночок, панель нагадувань
 │   ├── learning-plan.js         # парсинг .docx/.txt/.md, перемикач планів навчання, дошка навчального плану

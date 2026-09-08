@@ -385,13 +385,20 @@ function setPlanStatus(msg, kind) {
   planParseStatus.className = 'plan-status' + (kind ? ' is-' + kind : '');
 }
 
+function setPlanSheetTitle(showingUpload) {
+  document.getElementById('planSheetTitle').textContent = showingUpload ? 'Завантажити план' : 'Плани навчання';
+}
+
 function resetPlanUploadForm() {
   planUploadForm.hidden = true;
   planUploadToggle.hidden = false;
   planFileInput.value = '';
   planPasteText.value = '';
   planNameInput.value = '';
+  document.getElementById('planFileName').hidden = true;
+  document.getElementById('planFileName').textContent = '';
   setPlanStatus('');
+  setPlanSheetTitle(false);
 }
 
 function refreshAfterLearningPlanChange() {
@@ -489,6 +496,7 @@ function openPlanSheet(target, openUploadDirectly) {
   if (openUploadDirectly) {
     planUploadForm.hidden = false;
     planUploadToggle.hidden = true;
+    setPlanSheetTitle(true);
   }
 }
 function closePlanSheet() { planSheetOverlay.hidden = true; }
@@ -499,19 +507,28 @@ planSheetOverlay.addEventListener('click', function (e) { if (e.target === planS
 planUploadToggle.addEventListener('click', function () {
   planUploadForm.hidden = false;
   planUploadToggle.hidden = true;
+  setPlanSheetTitle(true);
 });
 document.getElementById('planUploadCancel').addEventListener('click', resetPlanUploadForm);
+
+document.getElementById('planFileBtn').addEventListener('click', function () { planFileInput.click(); });
+planFileInput.addEventListener('change', function () {
+  var file = planFileInput.files && planFileInput.files[0];
+  var nameEl = document.getElementById('planFileName');
+  nameEl.hidden = !file;
+  nameEl.textContent = file ? file.name : '';
+});
 
 document.getElementById('planUploadSave').addEventListener('click', function () {
   var file = planFileInput.files && planFileInput.files[0];
   var pasted = planPasteText.value.trim();
   if (!file && !pasted) { setPlanStatus('Обери файл або встав текст плану.', 'error'); return; }
 
-  setPlanStatus('Розбираю…', null);
+  setPlanStatus('Розбираю план на тижні…', null);
   var work = file ? buildPlanFromFile(file) : buildPlanFromText(pasted, 'Мій план');
   work.then(function (plan) {
     if (!plan.weekblocks.length) {
-      setPlanStatus('Не вдалося знайти жодного розділу в файлі. Спробуй файл із чіткими заголовками тижнів/розділів.', 'error');
+      setPlanStatus('Не вдалося знайти заголовки тижнів. Додай рядки на кшталт «Тиждень 1» — і спробуй ще раз.', 'error');
       return;
     }
     var customName = planNameInput.value.trim();
@@ -521,10 +538,13 @@ document.getElementById('planUploadSave').addEventListener('click', function () 
     saveLearningPlans();
     var target = PLAN_SHEET_TARGETS[planSheetTarget];
     target.setActiveId(id);
-    setPlanStatus('Готово: ' + plan.weekblocks.length + ' ' + pluralize(plan.weekblocks.length, ['розділ', 'розділи', 'розділів']) + '. План збережено і обрано.', 'ok');
     renderPlanList();
     target.refresh();
-    setTimeout(closePlanSheet, 1000);
+    closePlanSheet();
+    var taskCount = plan.weekblocks.reduce(function (sum, b) { return sum + b.tasks.length; }, 0);
+    showToast('План додано: ' + plan.weekblocks.length + ' ' +
+      pluralize(plan.weekblocks.length, ['тиждень', 'тижні', 'тижнів']) + ', ' +
+      taskCount + ' ' + pluralize(taskCount, ['задача', 'задачі', 'задач']));
   }).catch(function (err) {
     setPlanStatus('Помилка: ' + err.message, 'error');
   });

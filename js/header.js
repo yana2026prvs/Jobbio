@@ -1,9 +1,10 @@
 /* Shared "screen header" chrome: the sticky compact bar that fades in its
    inline title (and a hairline/blur) once the page scrolls past the large
-   title, plus a generic open/close helper for the header dropdowns
-   (reminders panel on Plan, "Ще" menu on Skills). One scroll listener drives
-   whichever page is currently visible, since all four pages share a single
-   scroll container (js/nav.js resets it on every tab switch).
+   title, a generic open/close helper for the header dropdowns (reminders
+   panel on Plan, "Ще" menu on Skills), and a shared toast for transient
+   confirmations (plan uploaded, application added, ...). One scroll listener
+   drives whichever page is currently visible, since all four pages share a
+   single scroll container (js/nav.js resets it on every tab switch).
    Depends on: nothing (pure DOM chrome) — js/plan.js and js/skills.js call
    setupHeaderPanel() to wire their own dropdowns. */
 
@@ -41,4 +42,43 @@ document.addEventListener('keydown', function (e) { if (e.key === 'Escape') clos
 var phoneScreenForHeader = document.querySelector('.phone-screen');
 if (phoneScreenForHeader) {
   phoneScreenForHeader.addEventListener('scroll', updateHeaderScrollState, { passive: true });
+}
+
+/* ---------- shared toast ---------- */
+var TOAST_DURATION = 3200;
+var toastHideTimer = null;
+var toastRemoveTimer = null;
+
+function showToast(message, actionLabel, onAction) {
+  var toast = document.getElementById('toast');
+  var msgEl = document.getElementById('toastMsg');
+  var actionEl = document.getElementById('toastAction');
+  if (!toast || !msgEl || !actionEl) return;
+
+  clearTimeout(toastHideTimer);
+  clearTimeout(toastRemoveTimer);
+
+  msgEl.textContent = message;
+  actionEl.hidden = !actionLabel;
+  actionEl.textContent = actionLabel || '';
+  actionEl.onclick = null;
+  if (actionLabel && typeof onAction === 'function') {
+    actionEl.onclick = function () {
+      onAction();
+      hideToast();
+    };
+  }
+
+  toast.hidden = false;
+  void toast.offsetHeight;
+  toast.classList.add('is-visible');
+  toastHideTimer = setTimeout(hideToast, TOAST_DURATION);
+}
+
+function hideToast() {
+  var toast = document.getElementById('toast');
+  if (!toast) return;
+  clearTimeout(toastHideTimer);
+  toast.classList.remove('is-visible');
+  toastRemoveTimer = setTimeout(function () { toast.hidden = true; }, 220);
 }
