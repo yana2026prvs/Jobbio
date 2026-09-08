@@ -114,7 +114,7 @@ function currentPlanMeta() {
   if (isPlanBuiltin()) {
     return {
       phaseOrder: PHASE_ORDER, phaseSpans: PHASE_SPANS, weekblocks: WEEKBLOCKS, allTasks: ALL_TASKS,
-      store: jobStore, name: 'План виходу на ринок праці'
+      store: jobStore, name: 'Стратегія працевлаштування'
     };
   }
   var plan = learningPlans.filter(function (p) { return p.id === planActiveId; })[0];
@@ -225,12 +225,12 @@ function renderPlanHeader() {
   if (!subtitle) return;
   if (isPlanEmpty()) {
     subtitle.hidden = true;
-    if (titleEl) titleEl.textContent = 'План виходу на ринок праці';
+    if (titleEl) titleEl.textContent = 'Стратегія працевлаштування';
     return;
   }
   subtitle.hidden = false;
   if (isPlanBuiltin()) {
-    if (titleEl) titleEl.textContent = 'План виходу на ринок праці';
+    if (titleEl) titleEl.textContent = 'Стратегія працевлаштування';
     subtitle.textContent = 'Тиждень ' + planCurrentWeekNumber() + ' з ' + PLAN_TOTAL_WEEKS + ' · ' + PLAN_TRACK_LABEL;
   } else {
     var meta = currentPlanMeta();
