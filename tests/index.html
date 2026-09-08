@@ -164,7 +164,7 @@
       // ---- STAGES / stageIndex ----
       try {
         var ids = T.STAGES.map(function (s) { return s.id; });
-        assert(JSON.stringify(ids) === JSON.stringify(['sent', 'replied', 'interview', 'offer']), JSON.stringify(ids));
+        assert(JSON.stringify(ids) === JSON.stringify(['sent', 'test', 'interview', 'offer', 'rejected']), JSON.stringify(ids));
         record('STAGES: порядок етапів воронки', true);
       } catch (e) { record('STAGES: порядок етапів воронки', false, e.message); }
 
@@ -256,7 +256,7 @@
       try {
         var label = appCard.querySelector('.app-deadline-label');
         assert(label.classList.contains('is-urgent'), 'клас=' + label.className);
-        assert(label.textContent.indexOf('Прострочено') !== -1, 'текст="' + label.textContent + '"');
+        assert(label.textContent.indexOf('Наступний крок') !== -1, 'текст="' + label.textContent + '"');
         record('Відгуки: прострочений дедлайн підсвічується на картці', true);
       } catch (e) { record('Відгуки: прострочений дедлайн підсвічується на картці', false, e.message); }
 
@@ -340,30 +340,39 @@
         assert(T.sourceFromUrl('https://djinni.co/jobs/123') === 'djinni', 'djinni');
         assert(T.sourceFromUrl('https://www.linkedin.com/jobs/view/123') === 'linkedin', 'linkedin');
         assert(T.sourceFromUrl('https://jobs.linkedin.com/foo') === 'linkedin', 'linkedin subdomain');
-        assert(T.sourceFromUrl('https://dou.ua/jobs/1') === 'dou', 'dou');
-        assert(T.sourceFromUrl('https://work.ua/jobs/1') === 'work', 'work.ua');
-        assert(T.sourceFromUrl('https://example.com/job') === 'manual', 'unknown -> manual');
-        assert(T.sourceFromUrl('') === 'manual', 'empty -> manual');
-        assert(T.sourceFromUrl(null) === 'manual', 'null -> manual');
-        record('sourceFromUrl: розпізнає djinni/linkedin/dou/work і повертає manual для решти', true);
-      } catch (e) { record('sourceFromUrl: розпізнає djinni/linkedin/dou/work і повертає manual для решти', false, e.message); }
+        assert(T.sourceFromUrl('https://dou.ua/jobs/1') === 'company', 'dou.ua -> company (dropped from the dictionary)');
+        assert(T.sourceFromUrl('https://work.ua/jobs/1') === 'company', 'work.ua -> company (dropped from the dictionary)');
+        assert(T.sourceFromUrl('https://example.com/job') === 'company', 'unknown -> company');
+        assert(T.sourceFromUrl('') === 'company', 'empty -> company');
+        assert(T.sourceFromUrl(null) === 'company', 'null -> company');
+        record('sourceFromUrl: розпізнає djinni/linkedin, інше -> "Сайт компанії"', true);
+      } catch (e) { record('sourceFromUrl: розпізнає djinni/linkedin, інше -> "Сайт компанії"', false, e.message); }
 
-      // ---- migration of legacy data (old "status" field -> "stage") ----
+      // ---- migration of legacy data ----
       clearAppStorage();
       localStorage.setItem('job-applications-v1', JSON.stringify([
-        { id: 'legacy1', company: 'Legacy Co', link: '', desc: '', status: 'replied' }
+        { id: 'legacy1', company: 'Legacy Co', link: '', desc: '', status: 'replied' },
+        { id: 'legacy2', company: 'Legacy Co 2', link: '', desc: '', stage: 'replied' }
       ]));
       try {
         var w2 = await loadIframe();
         var d2 = w2.document;
         var card = d2.querySelector('.app-card[data-id="legacy1"]');
         assert(card, 'картку legacy-відгуку не знайдено');
-        var repliedBtn = card.querySelector('.app-seg button[data-key="replied"]');
-        assert(repliedBtn.getAttribute('aria-pressed') === 'true', 'aria-pressed=' + repliedBtn.getAttribute('aria-pressed'));
+        var sentBtn = card.querySelector('.app-seg button[data-key="sent"]');
+        assert(sentBtn.getAttribute('aria-pressed') === 'true', 'aria-pressed=' + sentBtn.getAttribute('aria-pressed'));
         var dateInput = card.querySelector('.app-deadline input[type="date"]');
         assert(dateInput.value === '', 'value="' + dateInput.value + '"');
-        record('Міграція: старе поле status:"replied" стає етапом "Відповіли"', true);
-      } catch (e) { record('Міграція: старе поле status:"replied" стає етапом "Відповіли"', false, e.message); }
+        record('Міграція: старе поле status:"replied" (без stage) стає етапом "Надіслано"', true);
+      } catch (e) { record('Міграція: старе поле status:"replied" (без stage) стає етапом "Надіслано"', false, e.message); }
+
+      try {
+        var card2 = d2.querySelector('.app-card[data-id="legacy2"]');
+        assert(card2, 'картку legacy2-відгуку не знайдено');
+        var sentBtn2 = card2.querySelector('.app-seg button[data-key="sent"]');
+        assert(sentBtn2.getAttribute('aria-pressed') === 'true', 'aria-pressed=' + sentBtn2.getAttribute('aria-pressed'));
+        record('Міграція: retired stage:"replied" -> "Надіслано" (етап прибрано зі словника)', true);
+      } catch (e) { record('Міграція: retired stage:"replied" -> "Надіслано" (етап прибрано зі словника)', false, e.message); }
 
       // ---- Plan tab: empty state on a genuinely first-ever load ----
       clearAppStorageFully();
@@ -418,6 +427,63 @@
         assert(skillCount === 9, 'знайдено ' + skillCount);
         record('Навички: рендериться 9 карток, коли відгуків 3+', true);
       } catch (e) { record('Навички: рендериться 9 карток, коли відгуків 3+', false, e.message); }
+
+      // ---- Apps: search/filters gated at 5 records ----
+      clearAppStorageFully();
+      localStorage.setItem('job-plan-active-id-v1', 'builtin');
+      localStorage.setItem('job-applications-v1', JSON.stringify([
+        { id: 'f1', company: 'A', link: '', desc: '', stage: 'sent', deadline: '', source: 'company' },
+        { id: 'f2', company: 'B', link: '', desc: '', stage: 'sent', deadline: '', source: 'company' },
+        { id: 'f3', company: 'C', link: '', desc: '', stage: 'sent', deadline: '', source: 'company' },
+        { id: 'f4', company: 'D', link: '', desc: '', stage: 'sent', deadline: '', source: 'company' }
+      ]));
+      var w6, d6;
+      try {
+        w6 = await loadIframe();
+        d6 = w6.document;
+        assert(d6.querySelector('#apps .apps-filter').hidden === true, 'фільтри показались при 4 відгуках');
+        record('Відгуки: пошук і фільтри сховані, поки відгуків менше 5', true);
+      } catch (e) { record('Відгуки: пошук і фільтри сховані, поки відгуків менше 5', false, e.message); }
+
+      try {
+        d6.getElementById('appAddBtn').click();
+        d6.getElementById('appCompany').value = 'E';
+        d6.getElementById('appForm').requestSubmit();
+        assert(d6.querySelector('#apps .apps-filter').hidden === false, 'фільтри лишились сховані при 5 відгуках');
+        record('Відгуки: пошук і фільтри з\'являються від 5 відгуків', true);
+      } catch (e) { record('Відгуки: пошук і фільтри з\'являються від 5 відгуків', false, e.message); }
+
+      // ---- Apps: required-company error, position on card, toast + undo ----
+      clearAppStorageFully();
+      localStorage.setItem('job-plan-active-id-v1', 'builtin');
+      var w7 = await loadIframe();
+      var d7 = w7.document;
+
+      try {
+        d7.getElementById('appAddBtn').click();
+        d7.getElementById('appForm').requestSubmit();
+        assert(d7.getElementById('appCompanyError').hidden === false, 'помилка не показалась при порожній компанії');
+        assert(d7.querySelectorAll('.app-card').length === 0, 'картка не мала б створитись без компанії');
+        record('Відгуки: помилка під полем, коли компанія порожня', true);
+      } catch (e) { record('Відгуки: помилка під полем, коли компанія порожня', false, e.message); }
+
+      try {
+        d7.getElementById('appCompany').value = 'Genesis';
+        d7.getElementById('appPosition').value = 'Middle UI/UX Designer';
+        d7.getElementById('appForm').requestSubmit();
+        assert(d7.getElementById('appCompanyError').hidden === true, 'помилка лишилась видимою після заповнення компанії');
+        var newCard = d7.querySelector('.app-card');
+        assert(newCard && newCard.querySelector('.app-position').textContent === 'Middle UI/UX Designer', 'позиція не відобразилась на картці');
+        var toast = d7.getElementById('toast');
+        assert(toast.hidden === false && d7.getElementById('toastMsg').textContent === 'Відгук додано', 'тост "Відгук додано" не показався');
+        record('Відгуки: відгук зберігається з позицією, тост "Відгук додано" показується', true);
+      } catch (e) { record('Відгуки: відгук зберігається з позицією, тост "Відгук додано" показується', false, e.message); }
+
+      try {
+        d7.getElementById('toastAction').click();
+        assert(d7.querySelectorAll('.app-card').length === 0, 'картка лишилась після "Скасувати" у тості');
+        record('Відгуки: дія "Скасувати" в тості прибирає щойно доданий відгук', true);
+      } catch (e) { record('Відгуки: дія "Скасувати" в тості прибирає щойно доданий відгук', false, e.message); }
 
       clearAppStorage();
       finish();

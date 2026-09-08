@@ -1,15 +1,30 @@
 /* Applications (job-application tracker): stages/funnel, cards, filters, add-form.
-   Depends on: js/plan.js (deadlineInfo, saveDeadlines-adjacent renderCalendar/updateNotifyDot). */
+   Depends on: js/plan.js (deadlineInfo, renderCalendar/updateNotifyDot), js/header.js
+   (showToast, for the "Відгук додано" confirmation), js/utils.js (pluralize,
+   formatUaDateShort), js/learning-plan.js (renderSkillsPageContent, since the
+   Skills empty state's "3+ applications" threshold depends on apps.length). */
 
 var APPS_KEY = 'job-applications-v1';
+/* The single stage dictionary. "rejected" is deliberately excluded from
+   FUNNEL_STAGES below: it can happen after any of the other four, and since
+   only the current stage is tracked (no history), counting it cumulatively
+   into "test"/"interview"/"offer" would overstate how far those applications
+   actually got — a rejected application only reliably counts as "sent". */
 var STAGES = [
   { id: 'sent', label: 'Надіслано' },
-  { id: 'replied', label: 'Відповіли' },
+  { id: 'test', label: 'Тестове' },
   { id: 'interview', label: 'Співбесіда' },
-  { id: 'offer', label: 'Офер' }
+  { id: 'offer', label: 'Оффер' },
+  { id: 'rejected', label: 'Відмова' }
 ];
+var FUNNEL_STAGES = STAGES.slice(0, 4);
 function stageIndex(id) {
   for (var i = 0; i < STAGES.length; i++) if (STAGES[i].id === id) return i;
+  return 0;
+}
+function funnelStageIndex(id) {
+  if (id === 'rejected') return 0;
+  for (var i = 0; i < FUNNEL_STAGES.length; i++) if (FUNNEL_STAGES[i].id === id) return i;
   return 0;
 }
 var apps = [];
@@ -19,9 +34,11 @@ function loadApps() {
     apps = raw ? JSON.parse(raw) : [];
   } catch (e) { apps = []; }
   apps.forEach(function (a) {
-    if (!a.stage) a.stage = a.status === 'replied' ? 'replied' : 'sent';
+    if (!a.stage) a.stage = 'sent';
+    if (a.stage === 'replied') a.stage = 'sent'; // "Відповіли" retired from the stage dictionary
+    if (a.position === undefined) a.position = '';
     if (a.deadline === undefined) a.deadline = '';
-    if (!a.source) a.source = 'manual';
+    if (!a.source) a.source = sourceFromUrl(a.link);
   });
 }
 function saveApps() {
@@ -39,24 +56,33 @@ function shortLink(url) {
 }
 
 function sourceFromUrl(url) {
-  if (!url) return 'manual';
+  if (!url) return 'company';
   try {
     var host = new URL(url).hostname.replace(/^www\./, '');
     if (host === 'djinni.co') return 'djinni';
     if (host.endsWith('linkedin.com')) return 'linkedin';
-    if (host === 'dou.ua') return 'dou';
-    if (host === 'work.ua' || host === 'rabota.ua') return 'work';
   } catch (e) {}
-  return 'manual';
+  return 'company';
 }
 
 var SOURCE_META = {
-  djinni:  { label: 'Djinni',   cls: 'src-djinni' },
-  linkedin: { label: 'LinkedIn', cls: 'src-linkedin' },
-  dou:     { label: 'DOU',      cls: 'src-dou' },
-  work:    { label: 'Work.ua',  cls: 'src-work' }
+  djinni:   { label: 'Djinni',        cls: 'src-djinni' },
+  linkedin: { label: 'LinkedIn',       cls: 'src-linkedin' },
+  company:  { label: 'Сайт компанії',  cls: 'src-company' },
+  referral: { label: 'Рекомендація',   cls: 'src-referral' }
 };
 function sourceMeta(src) { return SOURCE_META[src] || null; }
+
+/* The app's creation timestamp is embedded in its id ('a' + Date.now()) —
+   used to compute how many days it's been since applying, for the "Без
+   відповіді N днів" silence line. */
+function daysSinceCreated(a) {
+  var match = /^a(\d+)/.exec(a.id);
+  if (!match) return null;
+  var createdMs = Number(match[1]);
+  return createdMs ? Math.floor((Date.now() - createdMs) / 86400000) : null;
+}
+var SILENCE_THRESHOLD_DAYS = 7;
 
 function appCardEl(a) {
   var el = document.createElement('article');
@@ -71,6 +97,12 @@ function appCardEl(a) {
   name.className = 'app-company';
   name.textContent = a.company;
   topLeft.appendChild(name);
+  if (a.position) {
+    var position = document.createElement('div');
+    position.className = 'app-position';
+    position.textContent = a.position;
+    topLeft.appendChild(position);
+  }
   var sm = sourceMeta(a.source);
   if (sm) {
     var badge = document.createElement('span');
@@ -91,6 +123,11 @@ function appCardEl(a) {
   top.appendChild(topLeft);
   top.appendChild(del);
   el.appendChild(top);
+
+  var stageChip = document.createElement('span');
+  stageChip.className = 'app-stage-chip stage-' + a.stage;
+  stageChip.textContent = STAGES[stageIndex(a.stage)].label;
+  el.appendChild(stageChip);
 
   if (a.link) {
     var link = document.createElement('a');
@@ -117,13 +154,19 @@ function appCardEl(a) {
   dlInput.type = 'date';
   dlInput.value = a.deadline || '';
   function refreshDeadlineLabel() {
-    var info = deadlineInfo(a.deadline);
-    if (!info) {
-      dlLabel.textContent = 'Дедлайн';
-      dlLabel.classList.remove('is-urgent');
+    if (a.deadline) {
+      var info = deadlineInfo(a.deadline);
+      dlLabel.textContent = 'Наступний крок: ' + formatUaDateShort(a.deadline);
+      dlLabel.classList.toggle('is-urgent', !!(info && info.urgent));
+      return;
+    }
+    var days = a.stage === 'sent' ? daysSinceCreated(a) : null;
+    if (days !== null && days >= SILENCE_THRESHOLD_DAYS) {
+      dlLabel.textContent = 'Без відповіді ' + days + ' ' + pluralize(days, ['день', 'дні', 'днів']);
+      dlLabel.classList.add('is-urgent');
     } else {
-      dlLabel.textContent = (info.urgent ? '🔥 ' : '📅 ') + info.text;
-      dlLabel.classList.toggle('is-urgent', info.urgent);
+      dlLabel.textContent = 'Наступний крок';
+      dlLabel.classList.remove('is-urgent');
     }
   }
   refreshDeadlineLabel();
@@ -152,6 +195,9 @@ function appCardEl(a) {
       seg.querySelectorAll('button').forEach(function (b) {
         b.setAttribute('aria-pressed', String(b.dataset.key === s.id));
       });
+      stageChip.className = 'app-stage-chip stage-' + a.stage;
+      stageChip.textContent = s.label;
+      refreshDeadlineLabel();
       renderAppsFunnel();
     });
     seg.appendChild(btn);
@@ -162,13 +208,13 @@ function appCardEl(a) {
 }
 
 function renderAppsFunnel() {
-  var counts = STAGES.map(function (stage, i) {
-    return apps.filter(function (a) { return stageIndex(a.stage) >= i; }).length;
+  var counts = FUNNEL_STAGES.map(function (stage, i) {
+    return apps.filter(function (a) { return funnelStageIndex(a.stage) >= i; }).length;
   });
   var base = counts[0] || 0;
   var wrap = document.getElementById('appsFunnel');
   wrap.innerHTML = '';
-  STAGES.forEach(function (stage, i) {
+  FUNNEL_STAGES.forEach(function (stage, i) {
     var row = document.createElement('div');
     row.className = 'funnel-row';
 
@@ -206,7 +252,7 @@ function renderAppsFunnel() {
 var appsFilter = { search: '', stage: 'all', source: 'all' };
 function matchesFilter(a) {
   if (appsFilter.stage !== 'all' && a.stage !== appsFilter.stage) return false;
-  if (appsFilter.source !== 'all' && (a.source || 'manual') !== appsFilter.source) return false;
+  if (appsFilter.source !== 'all' && a.source !== appsFilter.source) return false;
   if (appsFilter.search && a.company.toLowerCase().indexOf(appsFilter.search) === -1) return false;
   return true;
 }
@@ -252,15 +298,12 @@ function buildSourceFilterChips() {
   });
 }
 function refreshSourceFilter() {
-  var usedSources = apps.reduce(function (acc, a) {
-    var s = a.source || 'manual';
-    if (s !== 'manual') acc[s] = true;
-    return acc;
-  }, {});
+  var usedSources = {};
+  apps.forEach(function (a) { if (sourceMeta(a.source)) usedSources[a.source] = true; });
   var wrap = document.getElementById('appsSourceFilter');
-  var hasNonManual = Object.keys(usedSources).length > 0;
-  wrap.hidden = !hasNonManual;
-  if (!hasNonManual && appsFilter.source !== 'all') {
+  var hasVariety = Object.keys(usedSources).length > 1;
+  wrap.hidden = !hasVariety;
+  if (!hasVariety && appsFilter.source !== 'all') {
     appsFilter.source = 'all';
     wrap.querySelectorAll('button').forEach(function (b) {
       b.setAttribute('aria-pressed', String(b.dataset.key === 'all'));
@@ -274,10 +317,7 @@ document.getElementById('appsSearch').addEventListener('input', function (e) {
 });
 
 function appsInProgressCount() {
-  return apps.filter(function (a) {
-    var idx = stageIndex(a.stage);
-    return idx > 0 && idx < STAGES.length - 1;
-  }).length;
+  return apps.filter(function (a) { return a.stage === 'test' || a.stage === 'interview'; }).length;
 }
 
 function renderAppsHeader() {
@@ -288,11 +328,12 @@ function renderAppsHeader() {
     ' · ' + appsInProgressCount() + ' в роботі';
 }
 
+var APPS_FILTER_MIN = 5;
 function renderApps() {
   var hasAny = apps.length > 0;
   document.getElementById('appsEmptyState').hidden = hasAny;
   document.getElementById('appsFunnel').hidden = !hasAny;
-  document.querySelector('#apps .apps-filter').hidden = !hasAny;
+  document.querySelector('#apps .apps-filter').hidden = apps.length < APPS_FILTER_MIN;
   document.getElementById('appAddBtn').hidden = !hasAny;
 
   renderAppsFunnel();
@@ -314,9 +355,33 @@ function renderApps() {
 }
 
 var appForm = document.getElementById('appForm');
+var appStageSelect = document.getElementById('appStage');
+var appSourceSelect = document.getElementById('appSource');
+var appCompanyInput = document.getElementById('appCompany');
+var appCompanyError = document.getElementById('appCompanyError');
+var appLinkInput = document.getElementById('appLink');
+var appSourceTouched = false;
+
+STAGES.forEach(function (s) {
+  var opt = document.createElement('option');
+  opt.value = s.id;
+  opt.textContent = s.label;
+  appStageSelect.appendChild(opt);
+});
+Object.keys(SOURCE_META).forEach(function (id) {
+  var opt = document.createElement('option');
+  opt.value = id;
+  opt.textContent = SOURCE_META[id].label;
+  appSourceSelect.appendChild(opt);
+});
+appSourceSelect.addEventListener('change', function () { appSourceTouched = true; });
+appLinkInput.addEventListener('input', function () {
+  if (!appSourceTouched) appSourceSelect.value = sourceFromUrl(appLinkInput.value.trim());
+});
+
 function openAppForm() {
   appForm.hidden = false;
-  document.getElementById('appCompany').focus();
+  appCompanyInput.focus();
 }
 document.getElementById('appAddBtn').addEventListener('click', openAppForm);
 document.getElementById('appAddHeaderBtn').addEventListener('click', openAppForm);
@@ -332,20 +397,40 @@ document.getElementById('appsClearFiltersBtn').addEventListener('click', functio
   });
   renderApps();
 });
-document.getElementById('appCancelBtn').addEventListener('click', function () {
+function resetAppForm() {
   appForm.reset();
   appForm.hidden = true;
-});
+  appCompanyError.hidden = true;
+  appSourceSelect.value = 'company';
+  appSourceTouched = false;
+}
+document.getElementById('appCancelBtn').addEventListener('click', resetAppForm);
 appForm.addEventListener('submit', function (e) {
   e.preventDefault();
-  var company = document.getElementById('appCompany').value.trim();
-  if (!company) return;
-  var link = document.getElementById('appLink').value.trim();
-  var desc = document.getElementById('appDesc').value.trim();
-  var deadline = document.getElementById('appDeadline').value;
-  apps.push({ id: 'a' + Date.now(), company: company, link: link, desc: desc, stage: 'sent', deadline: deadline, source: sourceFromUrl(link) });
+  var company = appCompanyInput.value.trim();
+  if (!company) {
+    appCompanyError.hidden = false;
+    appCompanyInput.focus();
+    return;
+  }
+  appCompanyError.hidden = true;
+  var newApp = {
+    id: 'a' + Date.now(),
+    company: company,
+    position: document.getElementById('appPosition').value.trim(),
+    link: appLinkInput.value.trim(),
+    desc: document.getElementById('appDesc').value.trim(),
+    stage: appStageSelect.value || 'sent',
+    source: appSourceSelect.value || 'company',
+    deadline: document.getElementById('appDeadline').value
+  };
+  apps.push(newApp);
   saveApps();
-  appForm.reset();
-  appForm.hidden = true;
+  resetAppForm();
   renderApps();
+  showToast('Відгук додано', 'Скасувати', function () {
+    apps = apps.filter(function (x) { return x.id !== newApp.id; });
+    saveApps();
+    renderApps();
+  });
 });

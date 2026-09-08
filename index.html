@@ -130,16 +130,38 @@
 
     <button class="add-btn" id="appAddBtn" type="button">+ Додати відгук</button>
     <form class="add-form" id="appForm" hidden>
-      <input type="text" id="appCompany" placeholder="Назва компанії" required>
-      <input type="url" id="appLink" placeholder="Посилання на вакансію">
-      <textarea id="appDesc" placeholder="Короткий опис (позиція, умови, нотатки)"></textarea>
       <div class="add-field">
-        <label for="appDeadline">Дедлайн наступного кроку (необов'язково)</label>
+        <label for="appCompany">Компанія</label>
+        <input type="text" id="appCompany" placeholder="Наприклад, Genesis" aria-describedby="appCompanyError">
+        <p class="add-error" id="appCompanyError" hidden>Додай назву компанії — за нею шукатимеш пізніше.</p>
+      </div>
+      <div class="add-field">
+        <label for="appPosition">Позиція</label>
+        <input type="text" id="appPosition" placeholder="Middle UI/UX Designer">
+      </div>
+      <div class="add-field">
+        <label for="appLink">Посилання на вакансію</label>
+        <input type="url" id="appLink" placeholder="https://…">
+      </div>
+      <div class="add-field">
+        <label for="appStage">Етап</label>
+        <select id="appStage"></select>
+      </div>
+      <div class="add-field">
+        <label for="appSource">Джерело</label>
+        <select id="appSource"></select>
+      </div>
+      <div class="add-field">
+        <label for="appDeadline">Наступний крок</label>
         <input type="date" id="appDeadline">
+      </div>
+      <div class="add-field">
+        <label for="appDesc">Нотатки</label>
+        <textarea id="appDesc" placeholder="Умови, продукт, з ким спілкувалась"></textarea>
       </div>
       <div class="add-actions">
         <button type="button" class="add-cancel" id="appCancelBtn">Скасувати</button>
-        <button type="submit" class="add-save">Зберегти</button>
+        <button type="submit" class="add-save">Зберегти відгук</button>
       </div>
     </form>
 

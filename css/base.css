@@ -213,14 +213,17 @@ body {
   box-shadow: var(--card-shadow);
 }
 .add-form[hidden] { display: none; }
-.add-form input, .add-form textarea {
+.add-form input, .add-form textarea, .add-form select {
   font-family: inherit; font-size: 13px; color: var(--ink); background: var(--tile);
   border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; width: 100%; resize: vertical;
 }
+.add-form select { -webkit-appearance: none; appearance: none; }
 .add-form textarea { min-height: 56px; }
 .add-form .add-field { display: flex; flex-direction: column; gap: 4px; }
 .add-form .add-field label { font-size: 11px; color: var(--muted); }
 .add-form input[type="date"] { color-scheme: light; }
+.add-form .add-error { font-size: 11px; color: var(--urgent); }
+.add-form .add-error[hidden] { display: none; }
 .add-form .add-actions { display: flex; gap: 8px; }
 .add-form .add-actions button {
   flex: 1; font-family: inherit; font-size: 13px; font-weight: 700; border: none;

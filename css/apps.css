@@ -23,6 +23,7 @@
 }
 .app-card .app-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .app-card .app-company { font-weight: 700; font-size: 14.5px; line-height: 1.3; }
+.app-card .app-position { font-size: 12px; color: var(--muted); line-height: 1.3; margin-top: 1px; }
 .app-card .app-del {
   flex: 0 0 auto; border: none; background: none; color: var(--muted); cursor: pointer;
   font-size: 15px; line-height: 1; padding: 2px 4px;
@@ -33,6 +34,18 @@
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .app-card .app-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* ---------- stage chip (read-only, next to company/position) ---------- */
+.app-stage-chip {
+  display: inline-flex; align-items: center; align-self: flex-start;
+  font-size: 10.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+}
+.app-stage-chip.stage-sent      { background: var(--tile); color: var(--muted); }
+.app-stage-chip.stage-test      { background: var(--amber-bg); color: var(--amber); }
+.app-stage-chip.stage-interview { background: rgba(33,166,238,.12); color: var(--action-blue-deep); }
+.app-stage-chip.stage-offer     { background: rgba(111,240,176,.18); color: #1a6b42; }
+.app-stage-chip.stage-rejected  { background: var(--urgent-bg); color: var(--urgent); }
+
 .app-card .app-seg {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px;
   background: var(--tile); border-radius: 16px; padding: 4px;
@@ -42,10 +55,12 @@
   padding: 8px 4px; border: none; background: var(--seg-idle); color: var(--muted-soft);
   cursor: pointer; border-radius: 12px; white-space: nowrap; transition: background .12s, color .12s;
 }
+.app-card .app-seg button[data-key="rejected"] { grid-column: 1 / -1; }
 .app-card .app-seg button[data-key="sent"][aria-pressed="true"],
-.app-card .app-seg button[data-key="replied"][aria-pressed="true"],
+.app-card .app-seg button[data-key="test"][aria-pressed="true"],
 .app-card .app-seg button[data-key="interview"][aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 .app-card .app-seg button[data-key="offer"][aria-pressed="true"] { background: var(--lime); color: var(--lime-ink); }
+.app-card .app-seg button[data-key="rejected"][aria-pressed="true"] { background: var(--urgent); color: #FFFFFF; }
 .apps-empty { font-size: 12.5px; color: var(--muted); padding: 10px 2px 20px; }
 .apps-empty[hidden] { display: none; }
 
@@ -85,8 +100,8 @@
 }
 .app-source-badge.src-djinni   { background: rgba(0,120,212,.12); color: #005fa3; }
 .app-source-badge.src-linkedin { background: rgba(0,119,181,.12); color: #005f8d; }
-.app-source-badge.src-dou      { background: rgba(240,130,30,.13); color: #a35200; }
-.app-source-badge.src-work     { background: rgba(30,180,100,.12); color: #1a6b42; }
+.app-source-badge.src-company  { background: rgba(124,124,138,.14); color: #55555f; }
+.app-source-badge.src-referral { background: rgba(155,110,230,.14); color: #6b3fa0; }
 
 /* ---------- source filter ---------- */
 .apps-source-filter {
