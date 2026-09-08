@@ -28,6 +28,7 @@ function saveApps() {
   try { localStorage.setItem(APPS_KEY, JSON.stringify(apps)); } catch (e) {}
   updateNotifyDot();
   renderCalendar();
+  renderSkillsPageContent();
 }
 
 function shortLink(url) {
@@ -288,6 +289,12 @@ function renderAppsHeader() {
 }
 
 function renderApps() {
+  var hasAny = apps.length > 0;
+  document.getElementById('appsEmptyState').hidden = hasAny;
+  document.getElementById('appsFunnel').hidden = !hasAny;
+  document.querySelector('#apps .apps-filter').hidden = !hasAny;
+  document.getElementById('appAddBtn').hidden = !hasAny;
+
   renderAppsFunnel();
   refreshSourceFilter();
   renderAppsHeader();
@@ -295,15 +302,14 @@ function renderApps() {
   list.innerHTML = '';
   var filtered = apps.filter(matchesFilter);
   filtered.forEach(function (a) { list.appendChild(appCardEl(a)); });
+
   var emptyEl = document.getElementById('appsEmpty');
-  if (apps.length === 0) {
-    emptyEl.hidden = false;
-    emptyEl.textContent = 'Ще немає жодного відгуку — додай перший вище.';
-  } else if (filtered.length === 0) {
-    emptyEl.hidden = false;
-    emptyEl.textContent = 'Нічого не знайдено за цим фільтром.';
-  } else {
-    emptyEl.hidden = true;
+  var showSearchEmpty = hasAny && filtered.length === 0;
+  emptyEl.hidden = !showSearchEmpty;
+  if (showSearchEmpty) {
+    emptyEl.querySelector('.bfe-text').textContent = appsFilter.search
+      ? 'Нічого не знайшлося за «' + appsFilter.search + '». Перевір назву або очисти фільтри.'
+      : 'Нічого не знайшлося за цим фільтром. Спробуй очистити фільтри.';
   }
 }
 
@@ -314,6 +320,18 @@ function openAppForm() {
 }
 document.getElementById('appAddBtn').addEventListener('click', openAppForm);
 document.getElementById('appAddHeaderBtn').addEventListener('click', openAppForm);
+document.getElementById('appsEmptyAddBtn').addEventListener('click', openAppForm);
+document.getElementById('appsClearFiltersBtn').addEventListener('click', function () {
+  appsFilter = { search: '', stage: 'all', source: 'all' };
+  document.getElementById('appsSearch').value = '';
+  document.getElementById('appsStageFilter').querySelectorAll('button').forEach(function (b) {
+    b.setAttribute('aria-pressed', String(b.dataset.key === 'all'));
+  });
+  document.getElementById('appsSourceFilter').querySelectorAll('button').forEach(function (b) {
+    b.setAttribute('aria-pressed', String(b.dataset.key === 'all'));
+  });
+  renderApps();
+});
 document.getElementById('appCancelBtn').addEventListener('click', function () {
   appForm.reset();
   appForm.hidden = true;

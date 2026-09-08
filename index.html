@@ -50,8 +50,17 @@
       </div>
     </div>
     <div class="sh-large">
-      <h1 class="sh-title">План виходу на ринок праці</h1>
+      <h1 class="sh-title" id="planTitle">План виходу на ринок праці</h1>
       <p class="sh-subtitle" id="planSubtitle"></p>
+    </div>
+
+    <div class="empty-state" id="planEmptyState" hidden>
+      <div class="empty-icon" aria-hidden="true">🗓️</div>
+      <h2>Почни з плану на 13 тижнів</h2>
+      <p>Завантаж свій roadmap у .docx, .txt або .md — я розберу його на тижні й задачі. Або візьми готовий шаблон і переклади під себе.</p>
+      <button type="button" class="empty-primary" id="planEmptyUploadBtn">Завантажити план</button>
+      <button type="button" class="empty-secondary" id="planEmptyTemplateBtn">Взяти готовий шаблон</button>
+      <p class="empty-fineprint">Дані зберігаються тільки в цьому браузері</p>
     </div>
 
     <div class="cal-strip" id="deadlineCalendar" role="group" aria-label="Календар дедлайнів"></div>
@@ -66,6 +75,11 @@
     </div>
 
     <div class="board" id="board"></div>
+
+    <div class="empty-state empty-state-inline" id="boardFilterEmpty" hidden>
+      <p class="bfe-text"></p>
+      <button type="button" class="empty-secondary" id="boardFilterEmptyShowAll">Показати всі</button>
+    </div>
 
     <div class="foot">
       <span id="saveState">Статуси зберігаються автоматично в цьому браузері</span>
@@ -88,6 +102,13 @@
     <div class="sh-large">
       <h1 class="sh-title">Відгуки</h1>
       <p class="sh-subtitle" id="appsSubtitle"></p>
+    </div>
+
+    <div class="empty-state" id="appsEmptyState" hidden>
+      <div class="empty-icon" aria-hidden="true">📮</div>
+      <h2>Відстежуй, куди подалась</h2>
+      <p>Додавай вакансію одразу після відгуку — тут буде видно етап, дату наступного кроку і де ти зависла.</p>
+      <button type="button" class="empty-primary" id="appsEmptyAddBtn">Додати відгук</button>
     </div>
 
     <div class="funnel" id="appsFunnel"></div>
@@ -113,7 +134,10 @@
       </div>
     </form>
 
-    <p class="apps-empty" id="appsEmpty" hidden>Ще немає жодного відгуку — додай перший вище.</p>
+    <div class="empty-state empty-state-inline" id="appsEmpty" hidden>
+      <p class="bfe-text"></p>
+      <button type="button" class="empty-secondary" id="appsClearFiltersBtn">Очистити фільтри</button>
+    </div>
     <div class="apps-list" id="appsList"></div>
 
     <div class="foot">
@@ -148,6 +172,12 @@
     <div class="sh-large">
       <h1 class="sh-title" id="skillsTitle"></h1>
       <p class="sh-subtitle" id="skillsSubtitle"></p>
+    </div>
+
+    <div class="empty-state" id="skillsEmptyState" hidden>
+      <div class="empty-icon" aria-hidden="true">🧩</div>
+      <p>Додай 3-5 вакансій у «Відгуки» — і я покажу, які навички повторюються найчастіше.</p>
+      <button type="button" class="empty-primary" id="skillsEmptyGoToAppsBtn">Перейти до відгуків</button>
     </div>
 
     <div id="skillsDefaultView">

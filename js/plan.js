@@ -27,6 +27,55 @@ function saveDeadlines() {
   renderCalendar();
 }
 
+/* ---------- active plan on the Plan tab: 'builtin' (the fixed 13-week WEEKBLOCKS,
+   unchanged), 'none' (empty state, first launch), or a custom plan's id from the
+   shared learningPlans library (js/learning-plan.js) — the same library the Skills
+   tab's plan-switcher uses. Migration: an existing installation (any real data in
+   any of the app's own keys) always resolves to 'builtin', so a returning user's
+   view and progress never change; only a genuinely first-ever load starts empty. */
+var PLAN_ACTIVE_KEY = 'job-plan-active-id-v1';
+var planActiveId = 'builtin';
+function loadPlanActiveId() {
+  var stored;
+  try { stored = localStorage.getItem(PLAN_ACTIVE_KEY); } catch (e) { stored = null; }
+  if (!stored) {
+    var hasExistingData = ['job-plan-statuses-v1', 'job-plan-deadlines-v1', 'job-applications-v1', 'job-skills-v1', 'job-profile-v1']
+      .some(function (k) { try { return !!localStorage.getItem(k); } catch (e2) { return false; } });
+    stored = hasExistingData ? 'builtin' : 'none';
+    try { localStorage.setItem(PLAN_ACTIVE_KEY, stored); } catch (e) {}
+  }
+  if (stored !== 'builtin' && stored !== 'none' && !learningPlans.some(function (p) { return p.id === stored; })) {
+    stored = 'builtin';
+  }
+  planActiveId = stored;
+}
+function setPlanActiveId(id) {
+  planActiveId = id;
+  try { localStorage.setItem(PLAN_ACTIVE_KEY, id); } catch (e) {}
+}
+function isPlanBuiltin() { return planActiveId === 'builtin'; }
+function isPlanEmpty() { return planActiveId === 'none'; }
+
+/* Resolves what the Plan tab should currently render: the builtin job-search plan,
+   or one of the shared custom plans, with a uniform {weekblocks, allTasks, store}
+   shape so rendering code doesn't need to branch on which one it is. */
+function currentPlanMeta() {
+  if (isPlanBuiltin()) {
+    return {
+      phaseOrder: PHASE_ORDER, phaseSpans: PHASE_SPANS, weekblocks: WEEKBLOCKS, allTasks: ALL_TASKS,
+      store: jobStore, name: 'План виходу на ринок праці'
+    };
+  }
+  var plan = learningPlans.filter(function (p) { return p.id === planActiveId; })[0];
+  if (!plan) return { phaseOrder: [], phaseSpans: {}, weekblocks: [], allTasks: [], store: learningStore, name: 'План' };
+  var allTasks = [];
+  plan.weekblocks.forEach(function (b) { b.tasks.forEach(function (t) { allTasks.push(t); }); });
+  return {
+    phaseOrder: plan.phaseOrder, phaseSpans: plan.phaseSpans, weekblocks: plan.weekblocks, allTasks: allTasks,
+    store: learningStore, name: plan.name
+  };
+}
+
 function deadlineInfo(dateStr) {
   if (!dateStr) return null;
   var today = new Date(); today.setHours(0, 0, 0, 0);
@@ -53,11 +102,14 @@ function isDueTodayOrTomorrow(dateStr) {
 
 function collectReminders() {
   var items = [];
-  ALL_TASKS.forEach(function (t) {
-    if (getStatus(t.id) === 'done') return;
-    var dl = deadlines[t.id];
-    if (isDueTodayOrTomorrow(dl)) items.push({ title: t.title, text: deadlineInfo(dl).text });
-  });
+  if (!isPlanEmpty()) {
+    var planMeta = currentPlanMeta();
+    planMeta.allTasks.forEach(function (t) {
+      if (planMeta.store.getStatus(t.id) === 'done') return;
+      var dl = planMeta.store.getDeadline(t.id);
+      if (isDueTodayOrTomorrow(dl)) items.push({ title: t.title, text: deadlineInfo(dl).text });
+    });
+  }
   apps.forEach(function (a) {
     if (isDueTodayOrTomorrow(a.deadline)) items.push({ title: a.company, text: deadlineInfo(a.deadline).text });
   });
@@ -117,9 +169,24 @@ function planCurrentWeekNumber() {
 }
 
 function renderPlanHeader() {
+  var titleEl = document.getElementById('planTitle');
   var subtitle = document.getElementById('planSubtitle');
   if (!subtitle) return;
-  subtitle.textContent = 'Тиждень ' + planCurrentWeekNumber() + ' з ' + PLAN_TOTAL_WEEKS + ' · ' + PLAN_TRACK_LABEL;
+  if (isPlanEmpty()) {
+    subtitle.hidden = true;
+    if (titleEl) titleEl.textContent = 'План виходу на ринок праці';
+    return;
+  }
+  subtitle.hidden = false;
+  if (isPlanBuiltin()) {
+    if (titleEl) titleEl.textContent = 'План виходу на ринок праці';
+    subtitle.textContent = 'Тиждень ' + planCurrentWeekNumber() + ' з ' + PLAN_TOTAL_WEEKS + ' · ' + PLAN_TRACK_LABEL;
+  } else {
+    var meta = currentPlanMeta();
+    if (titleEl) titleEl.textContent = meta.name;
+    subtitle.textContent = meta.weekblocks.length + ' ' +
+      pluralize(meta.weekblocks.length, ['розділ', 'розділи', 'розділів']) + ' · власний план';
+  }
 }
 
 var state = {};
@@ -305,8 +372,10 @@ function taskEl(t, store) {
 function renderBoard() {
   var board = document.getElementById('board');
   board.innerHTML = '';
+  if (isPlanEmpty()) return;
+  var meta = currentPlanMeta();
   var lastPhase = null;
-  WEEKBLOCKS.forEach(function (block, blockIndex) {
+  meta.weekblocks.forEach(function (block, blockIndex) {
     if (block.phase !== lastPhase) {
       var head = document.createElement('div');
       head.className = 'phase-head';
@@ -315,7 +384,7 @@ function renderBoard() {
       name.textContent = block.phase;
       var span = document.createElement('span');
       span.className = 'span';
-      span.textContent = PHASE_SPANS[block.phase] || '';
+      span.textContent = meta.phaseSpans[block.phase] || '';
       head.appendChild(name);
       head.appendChild(span);
       board.appendChild(head);
@@ -329,7 +398,7 @@ function renderBoard() {
     wrap.appendChild(h2);
     var list = document.createElement('div');
     list.className = 'task-list';
-    block.tasks.forEach(function (t) { list.appendChild(taskEl(t, jobStore)); });
+    block.tasks.forEach(function (t) { list.appendChild(taskEl(t, meta.store)); });
     wrap.appendChild(list);
     board.appendChild(wrap);
   });
@@ -341,19 +410,22 @@ function pad2(n) { return n < 10 ? '0' + n : String(n); }
 function toDateStr(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
 
 function deadlineStateForDate(dateStr) {
-  var matchTasks = ALL_TASKS.filter(function (t) { return deadlines[t.id] === dateStr; });
+  var meta = isPlanEmpty() ? null : currentPlanMeta();
+  var matchTasks = meta ? meta.allTasks.filter(function (t) { return meta.store.getDeadline(t.id) === dateStr; }) : [];
   var matchApps = (apps || []).filter(function (a) { return a.deadline === dateStr; });
   if (!matchTasks.length && !matchApps.length) return null;
   var allDone = matchApps.length === 0 && matchTasks.length > 0 &&
-    matchTasks.every(function (t) { return getStatus(t.id) === 'done'; });
+    matchTasks.every(function (t) { return meta.store.getStatus(t.id) === 'done'; });
   return allDone ? 'resolved' : 'pending';
 }
 
 function scrollToDeadlineDate(dateStr) {
-  var task = ALL_TASKS.filter(function (t) { return deadlines[t.id] === dateStr; })[0];
+  if (isPlanEmpty()) return;
+  var meta = currentPlanMeta();
+  var task = meta.allTasks.filter(function (t) { return meta.store.getDeadline(t.id) === dateStr; })[0];
   if (!task) return;
   var blockIndex = -1;
-  WEEKBLOCKS.some(function (b, i) {
+  meta.weekblocks.some(function (b, i) {
     if (b.tasks.indexOf(task) !== -1) { blockIndex = i; return true; }
     return false;
   });
@@ -366,11 +438,14 @@ function renderCalendar() {
   var cal = document.getElementById('deadlineCalendar');
   if (!cal) return;
   cal.innerHTML = '';
+  cal.hidden = isPlanEmpty();
+  if (isPlanEmpty()) return;
 
   var today = new Date(); today.setHours(0, 0, 0, 0);
   var todayStr = toDateStr(today);
 
-  var allDeadlineDates = ALL_TASKS.map(function (t) { return deadlines[t.id]; })
+  var planMeta = currentPlanMeta();
+  var allDeadlineDates = planMeta.allTasks.map(function (t) { return planMeta.store.getDeadline(t.id); })
     .concat((apps || []).map(function (a) { return a.deadline; }))
     .filter(Boolean);
   var rangeDays = 30;
@@ -418,10 +493,13 @@ var JOB_SEARCH_GOAL = 'Знайти роботу до 1.01.2027';
 function renderHeroCard() {
   var hero = document.getElementById('heroCard');
   if (!hero) return;
-  var done = ALL_TASKS.filter(function (t) { return getStatus(t.id) === 'done'; }).length;
-  var total = ALL_TASKS.length;
+  hero.hidden = isPlanEmpty();
+  if (isPlanEmpty()) return;
+  var meta = currentPlanMeta();
+  var done = meta.allTasks.filter(function (t) { return meta.store.getStatus(t.id) === 'done'; }).length;
+  var total = meta.allTasks.length;
   var pct = total ? Math.round(done / total * 100) : 0;
-  var nextTask = ALL_TASKS.filter(function (t) { return getStatus(t.id) !== 'done'; })[0];
+  var nextTask = meta.allTasks.filter(function (t) { return meta.store.getStatus(t.id) !== 'done'; })[0];
   var nextLabel = nextTask ? truncateText(nextTask.title, 30) : 'Усе готово 🎉';
 
   var ticks = '';
@@ -444,14 +522,23 @@ function renderHeroCard() {
 }
 
 var STATUS_FILTER = 'all';
+var FILTER_LABELS = { queue: 'В черзі', doing: 'В роботі', done: 'Готово' };
+
 function applyStatusFilter() {
   var board = document.getElementById('board');
+  var filterWrap = document.getElementById('statusFilter');
+  var emptyMsg = document.getElementById('boardFilterEmpty');
+  if (filterWrap) filterWrap.hidden = isPlanEmpty();
   if (!board) return;
+  board.hidden = isPlanEmpty();
+  if (isPlanEmpty()) { if (emptyMsg) emptyMsg.hidden = true; return; }
+
   board.querySelectorAll('.task').forEach(function (task) {
     task.hidden = STATUS_FILTER !== 'all' && task.dataset.status !== STATUS_FILTER;
   });
   var currentPhaseHead = null;
   var phaseHasVisible = false;
+  var anyVisible = false;
   Array.prototype.forEach.call(board.children, function (el) {
     if (el.classList.contains('phase-head')) {
       if (currentPhaseHead) currentPhaseHead.hidden = !phaseHasVisible;
@@ -461,12 +548,22 @@ function applyStatusFilter() {
     }
     if (el.classList.contains('week-block')) {
       var visible = false;
-      el.querySelectorAll('.task').forEach(function (t) { if (!t.hidden) visible = true; });
+      el.querySelectorAll('.task').forEach(function (t) { if (!t.hidden) { visible = true; anyVisible = true; } });
       el.hidden = !visible;
       if (visible) phaseHasVisible = true;
     }
   });
   if (currentPhaseHead) currentPhaseHead.hidden = !phaseHasVisible;
+
+  var showFilterEmpty = STATUS_FILTER !== 'all' && !anyVisible;
+  if (emptyMsg) {
+    emptyMsg.hidden = !showFilterEmpty;
+    if (showFilterEmpty) {
+      emptyMsg.querySelector('.bfe-text').textContent =
+        'У «' + (FILTER_LABELS[STATUS_FILTER] || '') + '» поки порожньо. Візьми задачу з черги.';
+    }
+  }
+  board.hidden = showFilterEmpty;
 }
 
 var statusFilterEl = document.getElementById('statusFilter');
@@ -479,5 +576,43 @@ if (statusFilterEl) {
       });
       applyStatusFilter();
     });
+  });
+}
+var boardFilterEmptyShowAllBtn = document.getElementById('boardFilterEmptyShowAll');
+if (boardFilterEmptyShowAllBtn) {
+  boardFilterEmptyShowAllBtn.addEventListener('click', function () {
+    STATUS_FILTER = 'all';
+    if (statusFilterEl) {
+      statusFilterEl.querySelectorAll('button').forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.dataset.key === 'all'));
+      });
+    }
+    applyStatusFilter();
+  });
+}
+
+/* ---------- empty state (first launch, no active plan yet) ---------- */
+function refreshPlanTab() {
+  renderBoard();
+  renderCalendar();
+  renderHeroCard();
+  applyStatusFilter();
+  renderPlanHeader();
+  updateNotifyDot();
+  var emptyState = document.getElementById('planEmptyState');
+  if (emptyState) emptyState.hidden = !isPlanEmpty();
+}
+
+var planEmptyTemplateBtn = document.getElementById('planEmptyTemplateBtn');
+if (planEmptyTemplateBtn) {
+  planEmptyTemplateBtn.addEventListener('click', function () {
+    setPlanActiveId('builtin');
+    refreshPlanTab();
+  });
+}
+var planEmptyUploadBtn = document.getElementById('planEmptyUploadBtn');
+if (planEmptyUploadBtn) {
+  planEmptyUploadBtn.addEventListener('click', function () {
+    openPlanSheet('plan', true);
   });
 }

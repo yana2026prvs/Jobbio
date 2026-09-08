@@ -91,9 +91,21 @@
       });
     }
 
+    var ALL_APP_KEYS = ['job-plan-statuses-v1', 'job-plan-deadlines-v1', 'job-applications-v1', 'job-skills-v1',
+      'job-skills-analysis-updated-v1', 'job-profile-v1', 'job-plan-active-id-v1', 'job-learning-plans-v1',
+      'job-active-learning-plan-v1', 'job-learning-plan-statuses-v1', 'job-learning-plan-deadlines-v1'];
+
+    // Resets to the state an existing installation is in: real plan/app/skills data,
+    // with the builtin 13-week plan active on the Plan tab (matches the migration in
+    // js/plan.js loadPlanActiveId() — most tests below exercise that populated state).
+    // A true first-ever-load (no data in ANY app key, `job-plan-active-id-v1` absent
+    // too) is what shows the new empty state, and is tested separately below.
     function clearAppStorage() {
-      ['job-plan-statuses-v1', 'job-plan-deadlines-v1', 'job-applications-v1', 'job-skills-v1']
-        .forEach(function (k) { localStorage.removeItem(k); });
+      ALL_APP_KEYS.forEach(function (k) { localStorage.removeItem(k); });
+      localStorage.setItem('job-plan-active-id-v1', 'builtin');
+    }
+    function clearAppStorageFully() {
+      ALL_APP_KEYS.forEach(function (k) { localStorage.removeItem(k); });
     }
 
     async function run() {
@@ -215,10 +227,10 @@
 
       // ---- skills page DOM ----
       try {
-        var skillCount = d.querySelectorAll('.skill-card').length;
-        assert(skillCount === 9, 'знайдено ' + skillCount);
-        record('Навички: рендериться 9 карток', true);
-      } catch (e) { record('Навички: рендериться 9 карток', false, e.message); }
+        assert(d.getElementById('skillsEmptyState').hidden === false, 'порожній стан Навичок не показався при 0 відгуках');
+        assert(d.querySelectorAll('.skill-card').length === 0, 'чекліст не мав би рендеритись до 3 відгуків');
+        record('Навички (порожньо): порожній стан, поки відгуків менше 3', true);
+      } catch (e) { record('Навички (порожньо): порожній стан, поки відгуків менше 3', false, e.message); }
 
       // ---- apps funnel ----
       try {
@@ -296,7 +308,7 @@
       try {
         d.getElementById('appsStageFilter').querySelector('button[data-key="offer"]').click();
         var empty = d.getElementById('appsEmpty');
-        assert(empty.hidden === false && empty.textContent.indexOf('Нічого не знайдено') !== -1, empty.textContent);
+        assert(empty.hidden === false && empty.textContent.indexOf('Нічого не знайшлося') !== -1, empty.textContent);
         assert(d.querySelectorAll('.app-card').length === 0, 'карток видно=' + d.querySelectorAll('.app-card').length);
         record('Відгуки: порожній стан з поясненням, коли фільтр нічого не знаходить', true);
       } catch (e) { record('Відгуки: порожній стан з поясненням, коли фільтр нічого не знаходить', false, e.message); }
@@ -352,6 +364,60 @@
         assert(dateInput.value === '', 'value="' + dateInput.value + '"');
         record('Міграція: старе поле status:"replied" стає етапом "Відповіли"', true);
       } catch (e) { record('Міграція: старе поле status:"replied" стає етапом "Відповіли"', false, e.message); }
+
+      // ---- Plan tab: empty state on a genuinely first-ever load ----
+      clearAppStorageFully();
+      var w3, d3;
+      try {
+        w3 = await loadIframe();
+        d3 = w3.document;
+        assert(d3.getElementById('planEmptyState').hidden === false, 'порожній стан Плану не показався на першому запуску');
+        assert(d3.querySelectorAll('#plan .task').length === 0, 'задачі не мали б рендеритись до вибору плану');
+        assert(d3.getElementById('heroCard').hidden === true, 'hero-картка не мала б показуватись у порожньому стані');
+        assert(d3.getElementById('deadlineCalendar').hidden === true, 'календар не мав би показуватись у порожньому стані');
+        record('План (порожньо): порожній стан на першому запуску, без задач/hero/календаря', true);
+      } catch (e) { record('План (порожньо): порожній стан на першому запуску, без задач/hero/календаря', false, e.message); }
+
+      try {
+        d3.getElementById('planEmptyTemplateBtn').click();
+        assert(d3.getElementById('planEmptyState').hidden === true, 'порожній стан лишився видимим після "Взяти готовий шаблон"');
+        assert(d3.querySelectorAll('#plan .task').length === 26, 'задач=' + d3.querySelectorAll('#plan .task').length);
+        assert(w3.localStorage.getItem('job-plan-active-id-v1') === 'builtin', 'job-plan-active-id-v1 не зберігся як "builtin"');
+        record('План (порожньо): "Взяти готовий шаблон" вмикає базовий 13-тижневий план', true);
+      } catch (e) { record('План (порожньо): "Взяти готовий шаблон" вмикає базовий 13-тижневий план', false, e.message); }
+
+      // ---- Plan tab: an existing installation (data in some other key, but no
+      // explicit job-plan-active-id-v1 yet) migrates straight to the builtin plan,
+      // never showing the empty state — this is what protects a returning user's
+      // already-tracked plan from suddenly appearing "empty". ----
+      clearAppStorageFully();
+      localStorage.setItem('job-profile-v1', JSON.stringify({ name: 'Test User', email: '', role: '', bio: '' }));
+      try {
+        var w4 = await loadIframe();
+        var d4 = w4.document;
+        assert(d4.getElementById('planEmptyState').hidden === true, 'порожній стан показався для наявного користувача');
+        assert(d4.querySelectorAll('#plan .task').length === 26, 'задач=' + d4.querySelectorAll('#plan .task').length);
+        assert(w4.localStorage.getItem('job-plan-active-id-v1') === 'builtin', 'job-plan-active-id-v1 не мігрував на "builtin"');
+        record('Міграція: наявні дані в будь-якому ключі -> План одразу активний (без порожнього стану)', true);
+      } catch (e) { record('Міграція: наявні дані в будь-якому ключі -> План одразу активний (без порожнього стану)', false, e.message); }
+
+      // ---- Skills tab: frequency-analysis checklist renders once there are
+      // enough tracked applications (3-5, per the "Навички (порожньо)" spec) ----
+      clearAppStorageFully();
+      localStorage.setItem('job-plan-active-id-v1', 'builtin');
+      localStorage.setItem('job-applications-v1', JSON.stringify([
+        { id: 'sk1', company: 'A', link: '', desc: '', stage: 'sent', deadline: '', source: 'manual' },
+        { id: 'sk2', company: 'B', link: '', desc: '', stage: 'sent', deadline: '', source: 'manual' },
+        { id: 'sk3', company: 'C', link: '', desc: '', stage: 'sent', deadline: '', source: 'manual' }
+      ]));
+      try {
+        var w5 = await loadIframe();
+        var d5 = w5.document;
+        assert(d5.getElementById('skillsEmptyState').hidden === true, 'порожній стан лишився видимим при 3 відгуках');
+        var skillCount = d5.querySelectorAll('.skill-card').length;
+        assert(skillCount === 9, 'знайдено ' + skillCount);
+        record('Навички: рендериться 9 карток, коли відгуків 3+', true);
+      } catch (e) { record('Навички: рендериться 9 карток, коли відгуків 3+', false, e.message); }
 
       clearAppStorage();
       finish();

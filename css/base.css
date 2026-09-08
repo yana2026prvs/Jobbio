@@ -213,3 +213,23 @@ body {
 }
 .add-form .add-save { background: linear-gradient(135deg, var(--action-blue) 0%, var(--action-blue-deep) 100%); color: #FFFFFF; }
 .add-form .add-cancel { background: var(--tile); color: var(--muted); }
+
+/* ---------- empty states (first launch, no data yet, or a filter/search with
+   zero results) — reused across Plan/Apps/Skills. ---------- */
+.app-page .empty-state {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: 10px; padding: 36px 20px; margin-bottom: 16px;
+}
+.app-page .empty-state[hidden] { display: none; }
+.app-page .empty-icon { font-size: 40px; line-height: 1; margin-bottom: 4px; }
+.app-page .empty-state h2 { font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
+.app-page .empty-state p { font-size: 13px; color: var(--muted); line-height: 1.55; max-width: 280px; }
+.app-page .empty-primary, .app-page .empty-secondary {
+  width: 100%; max-width: 280px; font-family: inherit; font-size: 13.5px; font-weight: 700;
+  border-radius: 999px; padding: 13px; cursor: pointer; border: none;
+}
+.app-page .empty-primary { background: linear-gradient(135deg, var(--action-blue) 0%, var(--action-blue-deep) 100%); color: #FFFFFF; margin-top: 6px; }
+.app-page .empty-secondary { background: var(--tile); color: var(--ink); }
+.app-page .empty-fineprint { font-size: 11px; color: var(--muted-soft); margin-top: 2px; }
+.app-page .empty-state-inline { padding: 22px 16px; gap: 8px; margin-bottom: 14px; }
+.app-page .empty-state-inline .bfe-text { font-size: 13px; color: var(--muted); line-height: 1.5; max-width: 280px; }

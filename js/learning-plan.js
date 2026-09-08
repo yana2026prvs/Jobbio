@@ -355,13 +355,16 @@ function renderLearningBoard() {
   });
 }
 
+var SKILLS_APPS_MIN = 3;
 function renderSkillsPageContent() {
   var isDefault = isDefaultLearningPlan();
-  document.getElementById('skillsDefaultView').hidden = !isDefault;
+  var showEmpty = isDefault && apps.length < SKILLS_APPS_MIN;
+  document.getElementById('skillsEmptyState').hidden = !showEmpty;
+  document.getElementById('skillsDefaultView').hidden = !isDefault || showEmpty;
   document.getElementById('skillsPlanView').hidden = isDefault;
-  if (isDefault) {
+  if (isDefault && !showEmpty) {
     renderSkills();
-  } else {
+  } else if (!isDefault) {
     renderLearningOverview();
     renderLearningBoard();
   }
@@ -397,16 +400,37 @@ function refreshAfterLearningPlanChange() {
   updateNotifyDot();
 }
 
+/* The plan-switcher sheet is shared between the Skills tab's own plans and the
+   Plan tab's (js/plan.js) active plan — both pick from the same shared
+   learningPlans library, but each has its own "active id" and its own builtin
+   fallback (Skills' frequency checklist vs. Plan's fixed 13-week WEEKBLOCKS). */
+var planSheetTarget = 'skills';
+var PLAN_SHEET_TARGETS = {
+  skills: {
+    getActiveId: function () { return activeLearningPlanId; },
+    setActiveId: setActiveLearningPlanId,
+    refresh: refreshAfterLearningPlanChange,
+    builtinRow: { id: 'default', name: 'Базовий чекліст навичок', meta: '9 навичок · вбудований' }
+  },
+  plan: {
+    getActiveId: function () { return planActiveId; },
+    setActiveId: setPlanActiveId,
+    refresh: refreshPlanTab,
+    builtinRow: { id: 'builtin', name: 'Базовий 13-тижневий план', meta: '13 тижнів · вбудований' }
+  }
+};
+
 function renderPlanList() {
+  var target = PLAN_SHEET_TARGETS[planSheetTarget];
   var wrap = document.getElementById('planList');
   wrap.innerHTML = '';
-  var rows = [{ id: 'default', name: 'Базовий чекліст навичок', meta: '9 навичок · вбудований', builtin: true }]
+  var rows = [Object.assign({ builtin: true }, target.builtinRow)]
     .concat(learningPlans.map(function (p) {
       return { id: p.id, name: p.name, meta: p.weekblocks.length + ' ' + pluralize(p.weekblocks.length, ['розділ', 'розділи', 'розділів']) + ' · власний', builtin: false };
     }));
   rows.forEach(function (r) {
     var row = document.createElement('div');
-    row.className = 'plan-row' + (r.id === activeLearningPlanId ? ' is-active' : '');
+    row.className = 'plan-row' + (r.id === target.getActiveId() ? ' is-active' : '');
 
     var main = document.createElement('button');
     main.type = 'button';
@@ -420,9 +444,9 @@ function renderPlanList() {
     main.appendChild(nameEl);
     main.appendChild(metaEl);
     main.addEventListener('click', function () {
-      setActiveLearningPlanId(r.id);
+      target.setActiveId(r.id);
       renderPlanList();
-      refreshAfterLearningPlanChange();
+      target.refresh();
     });
     row.appendChild(main);
 
@@ -444,9 +468,12 @@ function renderPlanList() {
         Object.keys(learningDeadlines).forEach(function (k) { if (k.indexOf(prefix) === 0) delete learningDeadlines[k]; });
         saveLearningState();
         saveLearningDeadlines();
-        if (activeLearningPlanId === r.id) setActiveLearningPlanId('default');
+        Object.keys(PLAN_SHEET_TARGETS).forEach(function (key) {
+          var t = PLAN_SHEET_TARGETS[key];
+          if (t.getActiveId() === r.id) t.setActiveId(t.builtinRow.id);
+        });
         renderPlanList();
-        refreshAfterLearningPlanChange();
+        target.refresh();
       });
       row.appendChild(del);
     }
@@ -454,10 +481,15 @@ function renderPlanList() {
   });
 }
 
-function openPlanSheet() {
+function openPlanSheet(target, openUploadDirectly) {
+  planSheetTarget = target || 'skills';
   renderPlanList();
   resetPlanUploadForm();
   planSheetOverlay.hidden = false;
+  if (openUploadDirectly) {
+    planUploadForm.hidden = false;
+    planUploadToggle.hidden = true;
+  }
 }
 function closePlanSheet() { planSheetOverlay.hidden = true; }
 
@@ -487,10 +519,11 @@ document.getElementById('planUploadSave').addEventListener('click', function () 
     var id = 'p' + Date.now();
     learningPlans.push({ id: id, name: plan.name, createdAt: Date.now(), phaseOrder: plan.phaseOrder, phaseSpans: plan.phaseSpans, weekblocks: plan.weekblocks });
     saveLearningPlans();
-    setActiveLearningPlanId(id);
+    var target = PLAN_SHEET_TARGETS[planSheetTarget];
+    target.setActiveId(id);
     setPlanStatus('Готово: ' + plan.weekblocks.length + ' ' + pluralize(plan.weekblocks.length, ['розділ', 'розділи', 'розділів']) + '. План збережено і обрано.', 'ok');
     renderPlanList();
-    refreshAfterLearningPlanChange();
+    target.refresh();
     setTimeout(closePlanSheet, 1000);
   }).catch(function (err) {
     setPlanStatus('Помилка: ' + err.message, 'error');

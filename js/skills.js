@@ -151,3 +151,7 @@ document.getElementById('skillsExportAnalysisItem').addEventListener('click', fu
   exportSkillsAnalysis();
 });
 setupHeaderPanel(document.getElementById('skillsMoreBtn'), document.getElementById('skillsMoreMenu'));
+
+document.getElementById('skillsEmptyGoToAppsBtn').addEventListener('click', function () {
+  showPage('apps');
+});

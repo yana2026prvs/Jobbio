@@ -60,6 +60,7 @@
 
 /* ---------- apps filter ---------- */
 .apps-filter { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.apps-filter[hidden] { display: none; }
 .apps-filter input[type="search"] {
   font-family: inherit; font-size: 13px; color: var(--ink); background: var(--tile);
   border: 1px solid var(--border); border-radius: 999px; padding: 10px 14px; width: 100%;

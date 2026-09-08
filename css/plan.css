@@ -6,6 +6,7 @@
 
 /* ---------- deadline calendar ---------- */
 .cal-strip { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; margin-bottom: 16px; scrollbar-width: none; }
+.cal-strip[hidden] { display: none; }
 .cal-strip::-webkit-scrollbar { display: none; }
 .cal-day {
   position: relative; flex: 0 0 auto; width: 40px; min-height: 62px; border-radius: 32px; border: none; cursor: default;
@@ -37,6 +38,7 @@
   background: var(--lime); color: #FFFFFF; box-shadow: 0 16px 32px -16px rgba(33,166,238,.5);
   display: flex; flex-direction: column; gap: 16px;
 }
+.hero-card[hidden] { display: none; }
 .hero-card .hc-top { display: flex; flex-direction: column; gap: 12px; }
 .hero-card .hc-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .hero-card .hc-label { font-size: 18px; font-weight: 600; letter-spacing: -.01em; flex: 0 0 auto; }
@@ -54,6 +56,7 @@
 
 /* ---------- status quick-filter ---------- */
 .quick-filter { display: flex; gap: 8px; margin-bottom: 18px; }
+.quick-filter[hidden] { display: none; }
 .quick-filter button {
   flex: 1; font-family: inherit; font-size: 14px; font-weight: 500; padding: 10px 6px; border: none;
   border-radius: 999px; background: var(--seg-idle); color: var(--muted); cursor: pointer; white-space: nowrap;
