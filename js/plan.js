@@ -222,21 +222,16 @@ function planCurrentWeekNumber() {
 function renderPlanHeader() {
   var titleEl = document.getElementById('planTitle');
   var subtitle = document.getElementById('planSubtitle');
-  if (!subtitle) return;
+  if (subtitle) subtitle.hidden = true;
+  if (!titleEl) return;
   if (isPlanEmpty()) {
-    subtitle.hidden = true;
-    if (titleEl) titleEl.textContent = 'Стратегія працевлаштування';
+    titleEl.textContent = 'Стратегія працевлаштування';
     return;
   }
-  subtitle.hidden = false;
   if (isPlanBuiltin()) {
-    if (titleEl) titleEl.textContent = 'Стратегія працевлаштування';
-    subtitle.textContent = 'Тиждень ' + planCurrentWeekNumber() + ' з ' + PLAN_TOTAL_WEEKS + ' · ' + PLAN_TRACK_LABEL;
+    titleEl.textContent = 'Стратегія працевлаштування';
   } else {
-    var meta = currentPlanMeta();
-    if (titleEl) titleEl.textContent = meta.name;
-    subtitle.textContent = meta.weekblocks.length + ' ' +
-      pluralize(meta.weekblocks.length, ['розділ', 'розділи', 'розділів']) + ' · власний план';
+    titleEl.textContent = currentPlanMeta().name;
   }
 }
 
@@ -612,11 +607,8 @@ var FILTER_LABELS = { all: 'Всі', queue: 'В черзі', doing: 'В робо
 function updateFilterCounts() {
   var filterWrap = document.getElementById('statusFilter');
   if (!filterWrap || isPlanEmpty()) return;
-  var meta = currentPlanMeta();
-  var counts = { all: meta.allTasks.length, queue: 0, doing: 0, done: 0 };
-  meta.allTasks.forEach(function (t) { counts[meta.store.getStatus(t.id)]++; });
   filterWrap.querySelectorAll('button').forEach(function (b) {
-    b.textContent = FILTER_LABELS[b.dataset.key] + ' ' + counts[b.dataset.key];
+    b.textContent = FILTER_LABELS[b.dataset.key];
   });
 }
 

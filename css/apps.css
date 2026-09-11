@@ -3,9 +3,9 @@
 /* ---------- applications funnel ---------- */
 .funnel {
   background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 28px;
-  padding: 6px 16px; margin-bottom: 18px; box-shadow: var(--card-shadow);
+  padding: 6px 16px; margin-bottom: var(--space-section); box-shadow: var(--card-shadow);
 }
-.funnel-row { display: flex; flex-direction: column; padding: 12px 0; }
+.funnel-row { display: flex; flex-direction: column; padding: var(--space-tight-lg) 0; }
 .funnel-row + .funnel-row { border-top: 1px dashed var(--border); }
 .funnel-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .funnel-name { font-size: 12.5px; font-weight: 600; color: var(--muted); }
@@ -15,10 +15,10 @@
 .funnel-conv { font-size: 10.5px; color: var(--muted); margin-top: 6px; }
 
 /* ---------- application cards ---------- */
-.apps-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.apps-list { display: flex; flex-direction: column; gap: var(--space-tight); margin-bottom: var(--space-group); }
 .app-card {
   background: var(--card-surface-bg); border: 1px solid transparent; border-radius: 28px;
-  padding: 15px 15px 13px; display: flex; flex-direction: column; gap: 10px; position: relative;
+  padding: 15px 15px 13px; display: flex; flex-direction: column; gap: var(--space-tight-lg); position: relative;
   box-shadow: var(--card-shadow);
 }
 .app-card .app-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
@@ -74,14 +74,14 @@
 }
 
 /* ---------- apps filter ---------- */
-.apps-filter { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.apps-filter { display: flex; flex-direction: column; gap: var(--space-tight); margin-bottom: var(--space-group); }
 .apps-filter[hidden] { display: none; }
 .apps-filter input[type="search"] {
   font-family: inherit; font-size: 13px; color: var(--ink); background: var(--tile);
   border: 1px solid var(--border); border-radius: 999px; padding: 10px 14px; width: 100%;
   -webkit-appearance: none; appearance: none;
 }
-.apps-stage-filter { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.apps-stage-filter { display: flex; gap: var(--space-tight); overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
 .apps-stage-filter::-webkit-scrollbar { display: none; }
 .apps-stage-filter button {
   flex: 0 0 auto; font-family: inherit; font-size: 12px; font-weight: 600;
@@ -105,7 +105,7 @@
 
 /* ---------- source filter ---------- */
 .apps-source-filter {
-  display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px;
+  display: flex; flex-wrap: wrap; gap: var(--space-tight); margin-top: 6px;
 }
 .apps-source-filter button {
   font-family: inherit; font-size: 11.5px; font-weight: 600;
