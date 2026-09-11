@@ -1,6 +1,5 @@
 /* Learning-plan switcher/import bottom sheet (opened from the Skills page). */
 
-.topbar-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 .sheet-overlay {
   position: absolute; inset: 0; z-index: 30; border-radius: 40px; overflow: hidden;
   background: rgba(5,7,12,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -12,7 +11,7 @@
   width: 100%; max-height: 84%; overflow-y: auto; -webkit-overflow-scrolling: touch;
   background: var(--surface); border-radius: 28px 28px 0 0;
   padding: 18px 16px calc(24px + env(safe-area-inset-bottom, 0px));
-  display: flex; flex-direction: column; gap: 14px;
+  display: flex; flex-direction: column; gap: var(--space-group);
   box-shadow: 0 -20px 50px -20px rgba(0,0,0,.5);
 }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; }
@@ -21,9 +20,9 @@
   border: none; background: var(--tile-btn); color: var(--ink); width: 30px; height: 30px;
   border-radius: 50%; cursor: pointer; font-size: 13px; flex: 0 0 auto;
 }
-.plan-list { display: flex; flex-direction: column; gap: 8px; }
+.plan-list { display: flex; flex-direction: column; gap: var(--space-tight); }
 .plan-row {
-  display: flex; align-items: center; gap: 8px; background: var(--card-surface-bg);
+  display: flex; align-items: center; gap: var(--space-tight); background: var(--card-surface-bg);
   border-radius: 18px; padding: 6px 6px 6px 14px; border: 1px solid transparent;
   box-shadow: var(--card-shadow);
 }
@@ -42,6 +41,13 @@
   border: none; background: var(--tile-btn); color: var(--muted); font-size: 14px; cursor: pointer;
   width: 28px; height: 28px; border-radius: 50%; flex: 0 0 auto;
 }
+.plan-file-btn {
+  width: 100%; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ink);
+  background: var(--tile); border: 1px solid var(--border); border-radius: 14px;
+  padding: 11px 12px; cursor: pointer; text-align: left;
+}
+.plan-file-name { font-size: 11px; color: var(--muted); }
+.plan-file-name[hidden] { display: none; }
 .plan-or { font-size: 11px; color: var(--muted); text-align: center; margin: -4px 0; }
 .plan-status { font-size: 12px; padding: 8px 10px; border-radius: 10px; background: var(--tile); color: var(--muted); }
 .plan-status[hidden] { display: none; }

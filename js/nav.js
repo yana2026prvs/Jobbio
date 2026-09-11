@@ -8,6 +8,7 @@ function showPage(key) {
     navBtns[k].setAttribute('aria-current', String(k === key));
   });
   pages[key].closest('.phone-screen').scrollTop = 0;
+  updateHeaderScrollState();
 }
 navBtns.plan.addEventListener('click', function () { showPage('plan'); });
 navBtns.apps.addEventListener('click', function () { showPage('apps'); });

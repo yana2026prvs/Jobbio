@@ -1,8 +1,10 @@
-const CACHE = 'job-plan-v3';
+const CACHE = 'job-plan-v10';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
+  './img/apps-empty.png',
+  './img/skills-empty.png',
   './css/base.css',
   './css/plan.css',
   './css/apps.css',
@@ -10,6 +12,7 @@ const ASSETS = [
   './css/profile.css',
   './css/plan-sheet.css',
   './js/utils.js',
+  './js/header.js',
   './js/plan-data.js',
   './js/plan.js',
   './js/learning-plan.js',
@@ -62,13 +65,17 @@ self.addEventListener('fetch', function (event) {
     return;
   }
 
-  // Cache-first for static assets (icons, manifest).
+  // Stale-while-revalidate for static assets (css/js/icons/manifest): serve the
+  // cached copy instantly, but always refetch in the background and update the
+  // cache so the NEXT load already has today's edit — plain cache-first left CSS/JS
+  // stuck on whatever was cached at first install until a full SW version bump.
   event.respondWith(
     caches.match(req).then(function (cached) {
-      return cached || fetch(req).then(function (res) {
+      var network = fetch(req).then(function (res) {
         caches.open(CACHE).then(function (cache) { cache.put(req, res.clone()); });
         return res;
-      });
+      }).catch(function () { return cached; });
+      return cached || network;
     })
   );
 });

@@ -2,13 +2,24 @@
    order the app has always used, once all feature scripts have finished loading.
    Must be the last app script in index.html. */
 
+// Shared plan library (uploaded/pasted roadmaps) + their progress — both the Plan
+// tab's active plan and the Skills tab's active plan can point into this, so it
+// has to be loaded before either of those sections resolves its active plan.
+loadLearningPlans();
+loadLearningState();
+loadLearningDeadlines();
+
 // Plan
 loadPlanState();
 loadDeadlines();
+loadPlanActiveId();
+renderTodayBlock();
 renderBoard();
 renderCalendar();
 renderHeroCard();
 applyStatusFilter();
+renderPlanHeader();
+if (document.getElementById('planEmptyState')) document.getElementById('planEmptyState').hidden = !isPlanEmpty();
 
 // Applications
 buildStageFilterChips();
@@ -21,10 +32,7 @@ renderCalendar();
 loadSkills();
 
 // Learning plans (custom roadmaps shown on the Skills tab)
-loadLearningPlans();
 loadActiveLearningPlanId();
-loadLearningState();
-loadLearningDeadlines();
 renderSkillsHeader();
 renderSkillsPageContent();
 

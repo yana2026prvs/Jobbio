@@ -20,17 +20,30 @@ var profileFields = {
   bio: document.getElementById('profileBio')
 };
 var profileAvatar = document.getElementById('profileAvatar');
+function renderProfileHeader() {
+  var subtitle = document.getElementById('profileSubtitle');
+  if (!subtitle) return;
+  var parts = [profile.name.trim(), profile.role.trim()].filter(Boolean);
+  subtitle.hidden = parts.length === 0;
+  subtitle.textContent = parts.join(' · ');
+}
 function renderProfile() {
   Object.keys(profileFields).forEach(function (key) {
     profileFields[key].value = profile[key] || '';
   });
   profileAvatar.textContent = profile.name.trim().charAt(0).toUpperCase() || '?';
+  renderProfileHeader();
 }
 Object.keys(profileFields).forEach(function (key) {
   profileFields[key].addEventListener('input', function () {
     profile[key] = profileFields[key].value;
     saveProfile();
     if (key === 'name') profileAvatar.textContent = profile.name.trim().charAt(0).toUpperCase() || '?';
+    if (key === 'name' || key === 'role') renderProfileHeader();
   });
 });
 document.getElementById('profileForm').addEventListener('submit', function (e) { e.preventDefault(); });
+
+document.getElementById('profileReplacePlanBtn').addEventListener('click', function () {
+  openPlanSheet('skills', true);
+});

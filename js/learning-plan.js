@@ -33,7 +33,7 @@ function isDefaultLearningPlan() { return activeLearningPlanId === 'default'; }
 
 function getActiveLearningPlan() {
   if (activeLearningPlanId === 'default') {
-    return { id: 'default', name: 'Навички і скіли', eyebrow: 'На основі 7 вакансій', isDefault: true };
+    return { id: 'default', name: 'Навички', eyebrow: 'На основі 7 вакансій', isDefault: true };
   }
   var plan = learningPlans.filter(function (p) { return p.id === activeLearningPlanId; })[0];
   if (!plan) { activeLearningPlanId = 'default'; return getActiveLearningPlan(); }
@@ -49,7 +49,9 @@ function getActiveLearningPlan() {
 function renderSkillsHeader() {
   var active = getActiveLearningPlan();
   document.getElementById('skillsTitle').textContent = active.name;
-  document.getElementById('skillsEyebrow').textContent = active.eyebrow;
+  var subtitle = active.eyebrow;
+  if (active.isDefault) subtitle += ' · оновлено ' + formatUaDateShort(getSkillsAnalysisUpdated());
+  document.getElementById('skillsSubtitle').textContent = subtitle;
 }
 
 /* ---------- plan import: turn an uploaded/pasted roadmap into plan data ---------- */
@@ -265,7 +267,11 @@ function saveLearningState() {
   try { localStorage.setItem(LEARNING_STATE_KEY, JSON.stringify(learningState)); } catch (e) {}
 }
 function getLearningStatus(id) { return learningState[learningPlanKey(id)] || 'queue'; }
-function setLearningStatus(id, s) { learningState[learningPlanKey(id)] = s; saveLearningState(); renderLearningOverview(); updateNotifyDot(); }
+function setLearningStatus(id, s) {
+  learningState[learningPlanKey(id)] = s; saveLearningState(); renderLearningOverview(); updateNotifyDot();
+  // A custom plan can also be the Plan tab's active plan (js/plan.js) — keep it in sync too.
+  renderCalendar(); renderHeroCard(); applyStatusFilter(); renderPlanHeader(); renderTodayBlock();
+}
 
 var LEARNING_DEADLINES_KEY = 'job-learning-plan-deadlines-v1';
 var learningDeadlines = {};
@@ -278,6 +284,7 @@ function loadLearningDeadlines() {
 function saveLearningDeadlines() {
   try { localStorage.setItem(LEARNING_DEADLINES_KEY, JSON.stringify(learningDeadlines)); } catch (e) {}
   updateNotifyDot();
+  renderCalendar(); renderTodayBlock();
 }
 
 var learningStore = {
@@ -353,13 +360,16 @@ function renderLearningBoard() {
   });
 }
 
+var SKILLS_APPS_MIN = 3;
 function renderSkillsPageContent() {
   var isDefault = isDefaultLearningPlan();
-  document.getElementById('skillsDefaultView').hidden = !isDefault;
+  var showEmpty = isDefault && apps.length < SKILLS_APPS_MIN;
+  document.getElementById('skillsEmptyState').hidden = !showEmpty;
+  document.getElementById('skillsDefaultView').hidden = !isDefault || showEmpty;
   document.getElementById('skillsPlanView').hidden = isDefault;
-  if (isDefault) {
+  if (isDefault && !showEmpty) {
     renderSkills();
-  } else {
+  } else if (!isDefault) {
     renderLearningOverview();
     renderLearningBoard();
   }
@@ -380,13 +390,20 @@ function setPlanStatus(msg, kind) {
   planParseStatus.className = 'plan-status' + (kind ? ' is-' + kind : '');
 }
 
+function setPlanSheetTitle(showingUpload) {
+  document.getElementById('planSheetTitle').textContent = showingUpload ? 'Завантажити план' : 'Плани навчання';
+}
+
 function resetPlanUploadForm() {
   planUploadForm.hidden = true;
   planUploadToggle.hidden = false;
   planFileInput.value = '';
   planPasteText.value = '';
   planNameInput.value = '';
+  document.getElementById('planFileName').hidden = true;
+  document.getElementById('planFileName').textContent = '';
   setPlanStatus('');
+  setPlanSheetTitle(false);
 }
 
 function refreshAfterLearningPlanChange() {
@@ -395,16 +412,37 @@ function refreshAfterLearningPlanChange() {
   updateNotifyDot();
 }
 
+/* The plan-switcher sheet is shared between the Skills tab's own plans and the
+   Plan tab's (js/plan.js) active plan — both pick from the same shared
+   learningPlans library, but each has its own "active id" and its own builtin
+   fallback (Skills' frequency checklist vs. Plan's fixed 13-week WEEKBLOCKS). */
+var planSheetTarget = 'skills';
+var PLAN_SHEET_TARGETS = {
+  skills: {
+    getActiveId: function () { return activeLearningPlanId; },
+    setActiveId: setActiveLearningPlanId,
+    refresh: refreshAfterLearningPlanChange,
+    builtinRow: { id: 'default', name: 'Базовий чекліст навичок', meta: '9 навичок · вбудований' }
+  },
+  plan: {
+    getActiveId: function () { return planActiveId; },
+    setActiveId: setPlanActiveId,
+    refresh: refreshPlanTab,
+    builtinRow: { id: 'builtin', name: 'Базовий 13-тижневий план', meta: '13 тижнів · вбудований' }
+  }
+};
+
 function renderPlanList() {
+  var target = PLAN_SHEET_TARGETS[planSheetTarget];
   var wrap = document.getElementById('planList');
   wrap.innerHTML = '';
-  var rows = [{ id: 'default', name: 'Базовий чекліст навичок', meta: '9 навичок · вбудований', builtin: true }]
+  var rows = [Object.assign({ builtin: true }, target.builtinRow)]
     .concat(learningPlans.map(function (p) {
       return { id: p.id, name: p.name, meta: p.weekblocks.length + ' ' + pluralize(p.weekblocks.length, ['розділ', 'розділи', 'розділів']) + ' · власний', builtin: false };
     }));
   rows.forEach(function (r) {
     var row = document.createElement('div');
-    row.className = 'plan-row' + (r.id === activeLearningPlanId ? ' is-active' : '');
+    row.className = 'plan-row' + (r.id === target.getActiveId() ? ' is-active' : '');
 
     var main = document.createElement('button');
     main.type = 'button';
@@ -418,9 +456,9 @@ function renderPlanList() {
     main.appendChild(nameEl);
     main.appendChild(metaEl);
     main.addEventListener('click', function () {
-      setActiveLearningPlanId(r.id);
+      target.setActiveId(r.id);
       renderPlanList();
-      refreshAfterLearningPlanChange();
+      target.refresh();
     });
     row.appendChild(main);
 
@@ -442,9 +480,12 @@ function renderPlanList() {
         Object.keys(learningDeadlines).forEach(function (k) { if (k.indexOf(prefix) === 0) delete learningDeadlines[k]; });
         saveLearningState();
         saveLearningDeadlines();
-        if (activeLearningPlanId === r.id) setActiveLearningPlanId('default');
+        Object.keys(PLAN_SHEET_TARGETS).forEach(function (key) {
+          var t = PLAN_SHEET_TARGETS[key];
+          if (t.getActiveId() === r.id) t.setActiveId(t.builtinRow.id);
+        });
         renderPlanList();
-        refreshAfterLearningPlanChange();
+        target.refresh();
       });
       row.appendChild(del);
     }
@@ -452,33 +493,47 @@ function renderPlanList() {
   });
 }
 
-function openPlanSheet() {
+function openPlanSheet(target, openUploadDirectly) {
+  planSheetTarget = target || 'skills';
   renderPlanList();
   resetPlanUploadForm();
   planSheetOverlay.hidden = false;
+  if (openUploadDirectly) {
+    planUploadForm.hidden = false;
+    planUploadToggle.hidden = true;
+    setPlanSheetTitle(true);
+  }
 }
 function closePlanSheet() { planSheetOverlay.hidden = true; }
 
-document.getElementById('learningPlanOpenBtn').addEventListener('click', openPlanSheet);
 document.getElementById('planSheetClose').addEventListener('click', closePlanSheet);
 planSheetOverlay.addEventListener('click', function (e) { if (e.target === planSheetOverlay) closePlanSheet(); });
 
 planUploadToggle.addEventListener('click', function () {
   planUploadForm.hidden = false;
   planUploadToggle.hidden = true;
+  setPlanSheetTitle(true);
 });
 document.getElementById('planUploadCancel').addEventListener('click', resetPlanUploadForm);
+
+document.getElementById('planFileBtn').addEventListener('click', function () { planFileInput.click(); });
+planFileInput.addEventListener('change', function () {
+  var file = planFileInput.files && planFileInput.files[0];
+  var nameEl = document.getElementById('planFileName');
+  nameEl.hidden = !file;
+  nameEl.textContent = file ? file.name : '';
+});
 
 document.getElementById('planUploadSave').addEventListener('click', function () {
   var file = planFileInput.files && planFileInput.files[0];
   var pasted = planPasteText.value.trim();
   if (!file && !pasted) { setPlanStatus('Обери файл або встав текст плану.', 'error'); return; }
 
-  setPlanStatus('Розбираю…', null);
+  setPlanStatus('Розбираю план на тижні…', null);
   var work = file ? buildPlanFromFile(file) : buildPlanFromText(pasted, 'Мій план');
   work.then(function (plan) {
     if (!plan.weekblocks.length) {
-      setPlanStatus('Не вдалося знайти жодного розділу в файлі. Спробуй файл із чіткими заголовками тижнів/розділів.', 'error');
+      setPlanStatus('Не вдалося знайти заголовки тижнів. Додай рядки на кшталт «Тиждень 1» — і спробуй ще раз.', 'error');
       return;
     }
     var customName = planNameInput.value.trim();
@@ -486,11 +541,15 @@ document.getElementById('planUploadSave').addEventListener('click', function () 
     var id = 'p' + Date.now();
     learningPlans.push({ id: id, name: plan.name, createdAt: Date.now(), phaseOrder: plan.phaseOrder, phaseSpans: plan.phaseSpans, weekblocks: plan.weekblocks });
     saveLearningPlans();
-    setActiveLearningPlanId(id);
-    setPlanStatus('Готово: ' + plan.weekblocks.length + ' ' + pluralize(plan.weekblocks.length, ['розділ', 'розділи', 'розділів']) + '. План збережено і обрано.', 'ok');
+    var target = PLAN_SHEET_TARGETS[planSheetTarget];
+    target.setActiveId(id);
     renderPlanList();
-    refreshAfterLearningPlanChange();
-    setTimeout(closePlanSheet, 1000);
+    target.refresh();
+    closePlanSheet();
+    var taskCount = plan.weekblocks.reduce(function (sum, b) { return sum + b.tasks.length; }, 0);
+    showToast('План додано: ' + plan.weekblocks.length + ' ' +
+      pluralize(plan.weekblocks.length, ['тиждень', 'тижні', 'тижнів']) + ', ' +
+      taskCount + ' ' + pluralize(taskCount, ['задача', 'задачі', 'задач']));
   }).catch(function (err) {
     setPlanStatus('Помилка: ' + err.message, 'error');
   });

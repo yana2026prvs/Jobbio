@@ -91,9 +91,21 @@
       });
     }
 
+    var ALL_APP_KEYS = ['job-plan-statuses-v1', 'job-plan-deadlines-v1', 'job-applications-v1', 'job-skills-v1',
+      'job-skills-analysis-updated-v1', 'job-profile-v1', 'job-plan-active-id-v1', 'job-learning-plans-v1',
+      'job-active-learning-plan-v1', 'job-learning-plan-statuses-v1', 'job-learning-plan-deadlines-v1'];
+
+    // Resets to the state an existing installation is in: real plan/app/skills data,
+    // with the builtin 13-week plan active on the Plan tab (matches the migration in
+    // js/plan.js loadPlanActiveId() — most tests below exercise that populated state).
+    // A true first-ever-load (no data in ANY app key, `job-plan-active-id-v1` absent
+    // too) is what shows the new empty state, and is tested separately below.
     function clearAppStorage() {
-      ['job-plan-statuses-v1', 'job-plan-deadlines-v1', 'job-applications-v1', 'job-skills-v1']
-        .forEach(function (k) { localStorage.removeItem(k); });
+      ALL_APP_KEYS.forEach(function (k) { localStorage.removeItem(k); });
+      localStorage.setItem('job-plan-active-id-v1', 'builtin');
+    }
+    function clearAppStorageFully() {
+      ALL_APP_KEYS.forEach(function (k) { localStorage.removeItem(k); });
     }
 
     async function run() {
@@ -152,7 +164,7 @@
       // ---- STAGES / stageIndex ----
       try {
         var ids = T.STAGES.map(function (s) { return s.id; });
-        assert(JSON.stringify(ids) === JSON.stringify(['sent', 'replied', 'interview', 'offer']), JSON.stringify(ids));
+        assert(JSON.stringify(ids) === JSON.stringify(['sent', 'test', 'interview', 'offer', 'rejected']), JSON.stringify(ids));
         record('STAGES: порядок етапів воронки', true);
       } catch (e) { record('STAGES: порядок етапів воронки', false, e.message); }
 
@@ -198,10 +210,10 @@
         record('План: та сама задача знову "горить" після повернення в чергу', true);
       } catch (e) { record('План: та сама задача знову "горить" після повернення в чергу', false, e.message); }
 
-      // ---- notify bell badge ----
+      // ---- notify bell badge (bell lives only on the Plan header now) ----
       try {
         var dots = d.querySelectorAll('.notify-dot');
-        assert(dots.length === 4, 'дзвіночків=' + dots.length);
+        assert(dots.length === 1, 'дзвіночків=' + dots.length);
         assert(Array.from(dots).every(function (el) { return el.hidden === false; }), 'бейдж не показався при терміновій задачі');
         record('Дзвіночок: бейдж показується, коли є термінова задача', true);
       } catch (e) { record('Дзвіночок: бейдж показується, коли є термінова задача', false, e.message); }
@@ -215,10 +227,10 @@
 
       // ---- skills page DOM ----
       try {
-        var skillCount = d.querySelectorAll('.skill-card').length;
-        assert(skillCount === 9, 'знайдено ' + skillCount);
-        record('Навички: рендериться 9 карток', true);
-      } catch (e) { record('Навички: рендериться 9 карток', false, e.message); }
+        assert(d.getElementById('skillsEmptyState').hidden === false, 'порожній стан Навичок не показався при 0 відгуках');
+        assert(d.querySelectorAll('.skill-card').length === 0, 'чекліст не мав би рендеритись до 3 відгуків');
+        record('Навички (порожньо): порожній стан, поки відгуків менше 3', true);
+      } catch (e) { record('Навички (порожньо): порожній стан, поки відгуків менше 3', false, e.message); }
 
       // ---- apps funnel ----
       try {
@@ -244,15 +256,24 @@
       try {
         var label = appCard.querySelector('.app-deadline-label');
         assert(label.classList.contains('is-urgent'), 'клас=' + label.className);
-        assert(label.textContent.indexOf('Прострочено') !== -1, 'текст="' + label.textContent + '"');
+        assert(label.textContent.indexOf('Наступний крок') !== -1, 'текст="' + label.textContent + '"');
         record('Відгуки: прострочений дедлайн підсвічується на картці', true);
       } catch (e) { record('Відгуки: прострочений дедлайн підсвічується на картці', false, e.message); }
 
       try {
         var dots = d.querySelectorAll('.notify-dot');
-        assert(Array.from(dots).every(function (el) { return el.hidden === false; }), 'бейдж не показався при простроченому відгуку');
-        record('Дзвіночок: бейдж показується і через прострочений відгук', true);
-      } catch (e) { record('Дзвіночок: бейдж показується і через прострочений відгук', false, e.message); }
+        assert(Array.from(dots).every(function (el) { return el.hidden === true; }), 'бейдж показався лише через прострочений (не сьогодні/завтра) відгук');
+        record('Дзвіночок: бейдж НЕ показується лише через прострочений відгук (тільки сьогодні/завтра)', true);
+      } catch (e) { record('Дзвіночок: бейдж НЕ показується лише через прострочений відгук (тільки сьогодні/завтра)', false, e.message); }
+
+      try {
+        var dateInput = appCard.querySelector('.app-deadline input[type="date"]');
+        dateInput.value = fmt(today);
+        dateInput.dispatchEvent(new w.Event('change', { bubbles: true }));
+        var dots = d.querySelectorAll('.notify-dot');
+        assert(Array.from(dots).every(function (el) { return el.hidden === false; }), 'бейдж не показався при дедлайні сьогодні');
+        record('Дзвіночок: бейдж показується при дедлайні сьогодні', true);
+      } catch (e) { record('Дзвіночок: бейдж показується при дедлайні сьогодні', false, e.message); }
 
       try {
         appCard.querySelector('.app-seg button[data-key="interview"]').click();
@@ -287,7 +308,7 @@
       try {
         d.getElementById('appsStageFilter').querySelector('button[data-key="offer"]').click();
         var empty = d.getElementById('appsEmpty');
-        assert(empty.hidden === false && empty.textContent.indexOf('Нічого не знайдено') !== -1, empty.textContent);
+        assert(empty.hidden === false && empty.textContent.indexOf('Нічого не знайшлося') !== -1, empty.textContent);
         assert(d.querySelectorAll('.app-card').length === 0, 'карток видно=' + d.querySelectorAll('.app-card').length);
         record('Відгуки: порожній стан з поясненням, коли фільтр нічого не знаходить', true);
       } catch (e) { record('Відгуки: порожній стан з поясненням, коли фільтр нічого не знаходить', false, e.message); }
@@ -310,39 +331,159 @@
 
       try {
         var dots = d.querySelectorAll('.notify-dot');
-        assert(Array.from(dots).every(function (el) { return el.hidden === true; }), 'бейдж лишився видимим після видалення простроченого відгуку');
-        record('Дзвіночок: бейдж ховається після видалення простроченого відгуку', true);
-      } catch (e) { record('Дзвіночок: бейдж ховається після видалення простроченого відгуку', false, e.message); }
+        assert(Array.from(dots).every(function (el) { return el.hidden === true; }), 'бейдж лишився видимим після видалення відгуку з дедлайном сьогодні');
+        record('Дзвіночок: бейдж ховається після видалення відгуку з дедлайном сьогодні', true);
+      } catch (e) { record('Дзвіночок: бейдж ховається після видалення відгуку з дедлайном сьогодні', false, e.message); }
 
       // ---- sourceFromUrl ----
       try {
         assert(T.sourceFromUrl('https://djinni.co/jobs/123') === 'djinni', 'djinni');
         assert(T.sourceFromUrl('https://www.linkedin.com/jobs/view/123') === 'linkedin', 'linkedin');
         assert(T.sourceFromUrl('https://jobs.linkedin.com/foo') === 'linkedin', 'linkedin subdomain');
-        assert(T.sourceFromUrl('https://dou.ua/jobs/1') === 'dou', 'dou');
-        assert(T.sourceFromUrl('https://work.ua/jobs/1') === 'work', 'work.ua');
-        assert(T.sourceFromUrl('https://example.com/job') === 'manual', 'unknown -> manual');
-        assert(T.sourceFromUrl('') === 'manual', 'empty -> manual');
-        assert(T.sourceFromUrl(null) === 'manual', 'null -> manual');
-        record('sourceFromUrl: розпізнає djinni/linkedin/dou/work і повертає manual для решти', true);
-      } catch (e) { record('sourceFromUrl: розпізнає djinni/linkedin/dou/work і повертає manual для решти', false, e.message); }
+        assert(T.sourceFromUrl('https://dou.ua/jobs/1') === 'company', 'dou.ua -> company (dropped from the dictionary)');
+        assert(T.sourceFromUrl('https://work.ua/jobs/1') === 'company', 'work.ua -> company (dropped from the dictionary)');
+        assert(T.sourceFromUrl('https://example.com/job') === 'company', 'unknown -> company');
+        assert(T.sourceFromUrl('') === 'company', 'empty -> company');
+        assert(T.sourceFromUrl(null) === 'company', 'null -> company');
+        record('sourceFromUrl: розпізнає djinni/linkedin, інше -> "Сайт компанії"', true);
+      } catch (e) { record('sourceFromUrl: розпізнає djinni/linkedin, інше -> "Сайт компанії"', false, e.message); }
 
-      // ---- migration of legacy data (old "status" field -> "stage") ----
+      // ---- migration of legacy data ----
       clearAppStorage();
       localStorage.setItem('job-applications-v1', JSON.stringify([
-        { id: 'legacy1', company: 'Legacy Co', link: '', desc: '', status: 'replied' }
+        { id: 'legacy1', company: 'Legacy Co', link: '', desc: '', status: 'replied' },
+        { id: 'legacy2', company: 'Legacy Co 2', link: '', desc: '', stage: 'replied' }
       ]));
       try {
         var w2 = await loadIframe();
         var d2 = w2.document;
         var card = d2.querySelector('.app-card[data-id="legacy1"]');
         assert(card, 'картку legacy-відгуку не знайдено');
-        var repliedBtn = card.querySelector('.app-seg button[data-key="replied"]');
-        assert(repliedBtn.getAttribute('aria-pressed') === 'true', 'aria-pressed=' + repliedBtn.getAttribute('aria-pressed'));
+        var sentBtn = card.querySelector('.app-seg button[data-key="sent"]');
+        assert(sentBtn.getAttribute('aria-pressed') === 'true', 'aria-pressed=' + sentBtn.getAttribute('aria-pressed'));
         var dateInput = card.querySelector('.app-deadline input[type="date"]');
         assert(dateInput.value === '', 'value="' + dateInput.value + '"');
-        record('Міграція: старе поле status:"replied" стає етапом "Відповіли"', true);
-      } catch (e) { record('Міграція: старе поле status:"replied" стає етапом "Відповіли"', false, e.message); }
+        record('Міграція: старе поле status:"replied" (без stage) стає етапом "Надіслано"', true);
+      } catch (e) { record('Міграція: старе поле status:"replied" (без stage) стає етапом "Надіслано"', false, e.message); }
+
+      try {
+        var card2 = d2.querySelector('.app-card[data-id="legacy2"]');
+        assert(card2, 'картку legacy2-відгуку не знайдено');
+        var sentBtn2 = card2.querySelector('.app-seg button[data-key="sent"]');
+        assert(sentBtn2.getAttribute('aria-pressed') === 'true', 'aria-pressed=' + sentBtn2.getAttribute('aria-pressed'));
+        record('Міграція: retired stage:"replied" -> "Надіслано" (етап прибрано зі словника)', true);
+      } catch (e) { record('Міграція: retired stage:"replied" -> "Надіслано" (етап прибрано зі словника)', false, e.message); }
+
+      // ---- Plan tab: empty state on a genuinely first-ever load ----
+      clearAppStorageFully();
+      var w3, d3;
+      try {
+        w3 = await loadIframe();
+        d3 = w3.document;
+        assert(d3.getElementById('planEmptyState').hidden === false, 'порожній стан Плану не показався на першому запуску');
+        assert(d3.querySelectorAll('#plan .task').length === 0, 'задачі не мали б рендеритись до вибору плану');
+        assert(d3.getElementById('heroCard').hidden === true, 'hero-картка не мала б показуватись у порожньому стані');
+        assert(d3.getElementById('deadlineCalendar').hidden === true, 'календар не мав би показуватись у порожньому стані');
+        record('План (порожньо): порожній стан на першому запуску, без задач/hero/календаря', true);
+      } catch (e) { record('План (порожньо): порожній стан на першому запуску, без задач/hero/календаря', false, e.message); }
+
+      try {
+        d3.getElementById('planEmptyTemplateBtn').click();
+        assert(d3.getElementById('planEmptyState').hidden === true, 'порожній стан лишився видимим після "Взяти готовий шаблон"');
+        assert(d3.querySelectorAll('#plan .task').length === 26, 'задач=' + d3.querySelectorAll('#plan .task').length);
+        assert(w3.localStorage.getItem('job-plan-active-id-v1') === 'builtin', 'job-plan-active-id-v1 не зберігся як "builtin"');
+        record('План (порожньо): "Взяти готовий шаблон" вмикає базовий 13-тижневий план', true);
+      } catch (e) { record('План (порожньо): "Взяти готовий шаблон" вмикає базовий 13-тижневий план', false, e.message); }
+
+      // ---- Plan tab: an existing installation (data in some other key, but no
+      // explicit job-plan-active-id-v1 yet) migrates straight to the builtin plan,
+      // never showing the empty state — this is what protects a returning user's
+      // already-tracked plan from suddenly appearing "empty". ----
+      clearAppStorageFully();
+      localStorage.setItem('job-profile-v1', JSON.stringify({ name: 'Test User', email: '', role: '', bio: '' }));
+      try {
+        var w4 = await loadIframe();
+        var d4 = w4.document;
+        assert(d4.getElementById('planEmptyState').hidden === true, 'порожній стан показався для наявного користувача');
+        assert(d4.querySelectorAll('#plan .task').length === 26, 'задач=' + d4.querySelectorAll('#plan .task').length);
+        assert(w4.localStorage.getItem('job-plan-active-id-v1') === 'builtin', 'job-plan-active-id-v1 не мігрував на "builtin"');
+        record('Міграція: наявні дані в будь-якому ключі -> План одразу активний (без порожнього стану)', true);
+      } catch (e) { record('Міграція: наявні дані в будь-якому ключі -> План одразу активний (без порожнього стану)', false, e.message); }
+
+      // ---- Skills tab: frequency-analysis checklist renders once there are
+      // enough tracked applications (3-5, per the "Навички (порожньо)" spec) ----
+      clearAppStorageFully();
+      localStorage.setItem('job-plan-active-id-v1', 'builtin');
+      localStorage.setItem('job-applications-v1', JSON.stringify([
+        { id: 'sk1', company: 'A', link: '', desc: '', stage: 'sent', deadline: '', source: 'manual' },
+        { id: 'sk2', company: 'B', link: '', desc: '', stage: 'sent', deadline: '', source: 'manual' },
+        { id: 'sk3', company: 'C', link: '', desc: '', stage: 'sent', deadline: '', source: 'manual' }
+      ]));
+      try {
+        var w5 = await loadIframe();
+        var d5 = w5.document;
+        assert(d5.getElementById('skillsEmptyState').hidden === true, 'порожній стан лишився видимим при 3 відгуках');
+        var skillCount = d5.querySelectorAll('.skill-card').length;
+        assert(skillCount === 9, 'знайдено ' + skillCount);
+        record('Навички: рендериться 9 карток, коли відгуків 3+', true);
+      } catch (e) { record('Навички: рендериться 9 карток, коли відгуків 3+', false, e.message); }
+
+      // ---- Apps: search/filters gated at 5 records ----
+      clearAppStorageFully();
+      localStorage.setItem('job-plan-active-id-v1', 'builtin');
+      localStorage.setItem('job-applications-v1', JSON.stringify([
+        { id: 'f1', company: 'A', link: '', desc: '', stage: 'sent', deadline: '', source: 'company' },
+        { id: 'f2', company: 'B', link: '', desc: '', stage: 'sent', deadline: '', source: 'company' },
+        { id: 'f3', company: 'C', link: '', desc: '', stage: 'sent', deadline: '', source: 'company' },
+        { id: 'f4', company: 'D', link: '', desc: '', stage: 'sent', deadline: '', source: 'company' }
+      ]));
+      var w6, d6;
+      try {
+        w6 = await loadIframe();
+        d6 = w6.document;
+        assert(d6.querySelector('#apps .apps-filter').hidden === true, 'фільтри показались при 4 відгуках');
+        record('Відгуки: пошук і фільтри сховані, поки відгуків менше 5', true);
+      } catch (e) { record('Відгуки: пошук і фільтри сховані, поки відгуків менше 5', false, e.message); }
+
+      try {
+        d6.getElementById('appAddBtn').click();
+        d6.getElementById('appCompany').value = 'E';
+        d6.getElementById('appForm').requestSubmit();
+        assert(d6.querySelector('#apps .apps-filter').hidden === false, 'фільтри лишились сховані при 5 відгуках');
+        record('Відгуки: пошук і фільтри з\'являються від 5 відгуків', true);
+      } catch (e) { record('Відгуки: пошук і фільтри з\'являються від 5 відгуків', false, e.message); }
+
+      // ---- Apps: required-company error, position on card, toast + undo ----
+      clearAppStorageFully();
+      localStorage.setItem('job-plan-active-id-v1', 'builtin');
+      var w7 = await loadIframe();
+      var d7 = w7.document;
+
+      try {
+        d7.getElementById('appAddBtn').click();
+        d7.getElementById('appForm').requestSubmit();
+        assert(d7.getElementById('appCompanyError').hidden === false, 'помилка не показалась при порожній компанії');
+        assert(d7.querySelectorAll('.app-card').length === 0, 'картка не мала б створитись без компанії');
+        record('Відгуки: помилка під полем, коли компанія порожня', true);
+      } catch (e) { record('Відгуки: помилка під полем, коли компанія порожня', false, e.message); }
+
+      try {
+        d7.getElementById('appCompany').value = 'Genesis';
+        d7.getElementById('appPosition').value = 'Middle UI/UX Designer';
+        d7.getElementById('appForm').requestSubmit();
+        assert(d7.getElementById('appCompanyError').hidden === true, 'помилка лишилась видимою після заповнення компанії');
+        var newCard = d7.querySelector('.app-card');
+        assert(newCard && newCard.querySelector('.app-position').textContent === 'Middle UI/UX Designer', 'позиція не відобразилась на картці');
+        var toast = d7.getElementById('toast');
+        assert(toast.hidden === false && d7.getElementById('toastMsg').textContent === 'Відгук додано', 'тост "Відгук додано" не показався');
+        record('Відгуки: відгук зберігається з позицією, тост "Відгук додано" показується', true);
+      } catch (e) { record('Відгуки: відгук зберігається з позицією, тост "Відгук додано" показується', false, e.message); }
+
+      try {
+        d7.getElementById('toastAction').click();
+        assert(d7.querySelectorAll('.app-card').length === 0, 'картка лишилась після "Скасувати" у тості');
+        record('Відгуки: дія "Скасувати" в тості прибирає щойно доданий відгук', true);
+      } catch (e) { record('Відгуки: дія "Скасувати" в тості прибирає щойно доданий відгук', false, e.message); }
 
       clearAppStorage();
       finish();

@@ -121,3 +121,5 @@ var PHASE_SPANS = {};
 
 var ALL_TASKS = [];
 WEEKBLOCKS.forEach(function (b) { b.tasks.forEach(function (t) { ALL_TASKS.push(t); }); });
+
+var PLAN_TOTAL_WEEKS = 13;
